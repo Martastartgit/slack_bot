@@ -9,7 +9,7 @@ const StoreScheme = new Schema({
         minlength: 5,
         maxlength: 100
     },
-    roxy: {
+    rocks: {
         type: Number,
         min: 1,
         max: 999

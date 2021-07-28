@@ -5,7 +5,7 @@ const { dataTableName: { USER, ACTION, STORE } } = require('../../constants');
 const UserScheme = new Schema({
     id: String,
     name: String,
-    roxy: {
+    rocks: {
         type: Number,
         default: 10
     },

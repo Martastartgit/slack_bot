@@ -31,12 +31,12 @@ module.exports = {
                 action_id: 'roxy_input',
                 placeholder: {
                     type: 'plain_text',
-                    text: 'How much roxy'
+                    text: 'How much rocks'
                 }
             },
             label: {
                 type: 'plain_text',
-                text: 'Roxy'
+                text: 'Rocks'
             }
         }
 

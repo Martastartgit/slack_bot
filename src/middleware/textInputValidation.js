@@ -1,3 +1,1 @@
-const {regExp} = require('../constants')
-
-module.exports = (text) => text.match(regExp);
+module.exports = (text) => /^[0-9a-zA-Z]+$/.test(text.split(' ').join('')) ;

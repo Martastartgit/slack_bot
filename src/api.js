@@ -2,9 +2,10 @@ const { App, AwsLambdaReceiver } = require('@slack/bolt');
 
 const connectDB = require('./dataBase/connections');
 const { adminId } = require('./constants')
-const { attachments_helper, getInputValue, viewActionCreate } = require('./helper/');
+const { actionSelectMenu, attachments_helper, getInputValue, viewActionCreate } = require('./helper/');
 const { roxyValidation, textInputValidation } = require('./middleware');
 const { actionService: { action_service }, userService: { user_service } } = require('./service')
+
 
 const awsLambdaReceiver = new AwsLambdaReceiver({
     signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -114,12 +115,28 @@ app.view('view_1', async ({ ack, body, view, client }) =>{
 
     await ack();
 
-    await action_service.createAction({value: textValue, roxy: Number(roxyValue)})
+    await action_service.createAction({value: textValue, rocks: Number(roxyValue)})
 
     await client.chat.postMessage({
         channel: body.user.id,
         text: 'Action create'
     });
+});
+
+app.command('/get_actions', async ({ ack, say }) => {
+    try {
+        await ack();
+
+        const selectAttachments = await actionSelectMenu();
+
+        await say({
+            text: `Hey pick item`,
+            attachments: selectAttachments
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 module.exports.handler = async (event, context, callback) => {
