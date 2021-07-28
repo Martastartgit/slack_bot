@@ -90,7 +90,7 @@ module.exports = {
         'no-param-reassign': 'warn',
         'no-proto': 'error',
         'no-return-assign': 'error',
-        'no-return-await': 'error',
+        'no-return-await': 'warn',
         'no-restricted-syntax': 'off',
         'no-script-url': 'error',
         'no-self-compare': 'error',
@@ -100,7 +100,7 @@ module.exports = {
         'no-unsafe-finally': 'error',
         'no-unused-expressions': 'error',
         'no-unused-vars': [
-            'error',
+            'warn',
             { varsIgnorePattern: 'ctx' },
         ],
         'no-use-before-define': [

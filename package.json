@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@slack/bolt": "^3.5.0"
+    "@slack/bolt": "^3.5.0",
+    "mongoose": "^5.13.3"
   },
   "devDependencies": {
     "eslint": "^7.31.0",

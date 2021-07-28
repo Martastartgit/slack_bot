@@ -1,3 +1,6 @@
 module.exports = {
-    attachments_helper: require('./attachmentsHelper')
+    attachments_helper: require('./attachmentsHelper'),
+    getInputValue: require('./getInputValue'),
+    viewActionCreate: require('./modalCreateAction')
+
 }
