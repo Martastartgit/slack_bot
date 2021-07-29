@@ -250,6 +250,22 @@ app.command('/menu', async ({ ack, say }) => {
     }
 });
 
+app.command('/balance', async ({ ack,body, client }) => {
+    try {
+        await ack();
+
+        const {rocks} = await user_service.findUser({id: body.user_id})
+
+        await client.chat.postMessage({
+            channel: body.user_id,
+            text: `You have ${rocks} rocks`
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
+
 app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({action, ack, say }) => {
     await ack();
 

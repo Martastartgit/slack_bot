@@ -35,6 +35,20 @@ module.exports = [{
                     text: "/get_rewards"
                 },
                 value: "get_rewards"
+            },
+            {
+                text: {
+                    type: "plain_text",
+                    text: "/balance"
+                },
+                value: "balance"
+            },
+            {
+                text: {
+                    type: "plain_text",
+                    text: "/karma"
+                },
+                value: "karma"
             }
 
 
