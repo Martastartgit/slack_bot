@@ -2,8 +2,14 @@ const { App, AwsLambdaReceiver } = require('@slack/bolt');
 
 const connectDB = require('./dataBase/connections');
 const { adminId } = require('./constants')
-const { actionSelectMenu, attachments_helper, getInputValue, viewActionCreate } = require('./helper/');
-const { roxyValidation, textInputValidation } = require('./middleware');
+const { approvedAttachment,
+    actionSelectMenu,
+    attachments_helper,
+    getInputValue,
+    overflowSection,
+    viewActionCreate } = require('./helper/');
+const { roxyValidation,
+    textInputValidation } = require('./middleware');
 const { actionService: { action_service }, userService: { user_service } } = require('./service')
 
 
@@ -139,7 +145,51 @@ app.command('/get_actions', async ({ ack, say }) => {
     }
 });
 
+app.command('/menu', async ({ ack, say }) => {
+    try {
+        await ack();
+
+        await say({
+            blocks: overflowSection
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+app.action({callback_id: 'selection', type: 'interactive_message'}, async ({action, ack, say }) => {
+    await ack();
+
+    let selectValue = '';
+
+    const {selected_options} = action;
+
+    selected_options.map(({value}) => {
+        selectValue = value
+    });
+
+    const {rocks} = await action_service.findAction({value: selectValue});
+
+    await say({
+        text: `You chose ${selectValue}. It costs ${rocks} rocks`,
+        attachments: approvedAttachment
+    });
+
+});
+
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();
     return handler(event, context, callback);
+}
+
+module.exports.authorization = (event, context, callback) =>{
+    const response = {
+        statusCode: 200,
+        body: JSON.stringify({
+            message: "Authorization was called",
+            input: event
+        }),
+    };
+    callback(null, response);
 }

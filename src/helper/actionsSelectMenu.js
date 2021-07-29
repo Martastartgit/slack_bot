@@ -5,8 +5,8 @@ const createOptions = async () => {
 
     return actions.map((item) => ({
         type: "plain_text",
-        text: `${item.value}-rocks:${item.rocks} `,
-        value: `${item._id}`
+        text: `${item.value}`,
+        value: `${item.value}`
     }))
 }
 
