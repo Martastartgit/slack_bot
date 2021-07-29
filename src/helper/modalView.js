@@ -1,9 +1,9 @@
-module.exports = {
+module.exports = (text, callbackId) => ({
     type: 'modal',
-    callback_id: 'view_1',
+    callback_id: `${callbackId}`,
     title: {
         type: 'plain_text',
-        text: 'Create action'
+        text: `Create ${text}`
     },
     blocks: [
         {
@@ -20,7 +20,7 @@ module.exports = {
             },
             label: {
                 type: 'plain_text',
-                text: 'Action'
+                text: `${text}`
             }
         },
         {
@@ -49,4 +49,4 @@ module.exports = {
         type: 'plain_text',
         text: 'Cancel'
     }
-}
+})

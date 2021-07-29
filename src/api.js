@@ -1,16 +1,18 @@
 const { App, AwsLambdaReceiver } = require('@slack/bolt');
 
 const connectDB = require('./dataBase/connections');
-const { adminId } = require('./constants')
+const { adminId, dataTableName } = require('./constants')
 const { approvedAttachment,
-    actionSelectMenu,
     attachments_helper,
     getInputValue,
     overflowSection,
-    viewActionCreate } = require('./helper/');
+    viewCreate,
+    selectMenu } = require('./helper/');
 const { roxyValidation,
     textInputValidation } = require('./middleware');
-const { actionService: { action_service }, userService: { user_service } } = require('./service')
+const { actionService: { action_service },
+    userService: { user_service },
+    storeService: { store_service }} = require('./service')
 
 
 const awsLambdaReceiver = new AwsLambdaReceiver({
@@ -56,12 +58,22 @@ app.event('app_mention', async ({ event, say }) => {
 app.action({callback_id: 'actions_bot', type: 'interactive_message'}, async ({action, ack, say }) => {
     await ack();
     switch (action.value) {
-        case 'store':
-            await say('Here should be a list of products');
+        case 'store': {
+            const selectAttachments = await selectMenu(dataTableName.STORE, 'select_store');
 
+            await say({
+                text: `Hey pick item`,
+                attachments: selectAttachments
+            });
             break;
+        }
         case 'list_actions':
-            await say('Here should be a list of actions ');
+            const selectAttachments = await selectMenu(dataTableName.ACTION, 'select_action');
+
+            await say({
+                text: `Hey pick item`,
+                attachments: selectAttachments
+            });
 
             break;
     }
@@ -76,10 +88,32 @@ app.command('/add_action', async ({ ack, body, say,client }) => {
 
             return;
         }
+        const viewAction = viewCreate('Action', 'view_1')
 
         await client.views.open({
             trigger_id: body.trigger_id,
-            view: viewActionCreate
+            view: viewAction
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+app.command('/add_reward', async ({ ack, body, say,client }) => {
+    try {
+        await ack();
+
+        if (!adminId.includes(body.user_id)){
+            await say('Access deny');
+
+            return;
+        }
+        const viewStore = viewCreate('Store', 'view_2')
+
+        await client.views.open({
+            trigger_id: body.trigger_id,
+            view: viewStore
         });
 
     } catch (error) {
@@ -129,11 +163,69 @@ app.view('view_1', async ({ ack, body, view, client }) =>{
     });
 });
 
+app.view('view_2' , async ({ ack, body, view, client }) =>{
+    const [
+        actionInput,
+        roxyInput
+    ] = Object.values(view.state.values);
+    const { textValue, roxyValue} = getInputValue(actionInput, roxyInput);
+
+    const ifRoxyNotValid = roxyValidation(Number(roxyValue));
+    const ifTextValid = textInputValidation(textValue);
+
+    if (ifRoxyNotValid) {
+        await ack({
+            response_action: 'errors',
+            errors: {
+                roxy_block: 'Not valid input'
+            }
+        });
+
+        return;
+    }
+
+    if (!ifTextValid) {
+        await ack({
+            response_action: 'errors',
+            errors: {
+                action_block: 'Not valid input'
+            }
+        });
+
+        return;
+    }
+
+    await ack();
+
+    await store_service.createStore({value: textValue, rocks: Number(roxyValue)})
+
+    await client.chat.postMessage({
+        channel: body.user.id,
+        text: 'Reward create'
+    });
+});
+
 app.command('/get_actions', async ({ ack, say }) => {
     try {
         await ack();
 
-        const selectAttachments = await actionSelectMenu();
+        const selectAttachments = await selectMenu(dataTableName.ACTION, 'select_action');
+
+        await say({
+            text: `Hey pick item`,
+            attachments: selectAttachments
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+app.command('/get_rewards', async ({ ack, say }) => {
+    try {
+        await ack();
+
+        const selectAttachments = await selectMenu(dataTableName.STORE, 'select_store');
 
         await say({
             text: `Hey pick item`,
@@ -158,7 +250,7 @@ app.command('/menu', async ({ ack, say }) => {
     }
 });
 
-app.action({callback_id: 'selection', type: 'interactive_message'}, async ({action, ack, say }) => {
+app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({action, ack, say }) => {
     await ack();
 
     let selectValue = '';
@@ -178,6 +270,25 @@ app.action({callback_id: 'selection', type: 'interactive_message'}, async ({acti
 
 });
 
+app.action({callback_id: 'select_store', type: 'interactive_message'}, async ({action, ack, say }) => {
+    await ack();
+
+    let selectValue = '';
+
+    const {selected_options} = action;
+
+    selected_options.map(({value}) => {
+        selectValue = value
+    });
+
+    const {rocks} = await store_service.findOneStore({value: selectValue});
+
+    await say({
+        text: `You chose ${selectValue}. It costs ${rocks} rocks`,
+        attachments: approvedAttachment
+    });
+
+});
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();
     return handler(event, context, callback);
