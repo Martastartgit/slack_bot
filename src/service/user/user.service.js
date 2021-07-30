@@ -5,5 +5,6 @@ module.exports ={
 
     findUser: (filterObject) => User.findOne(filterObject),
 
-    updateOne: (userId, userObject) => User.findByIdAndUpdate(userId, userObject, { new: true }),
+    updateOne: (filterObject, updateObject) => User.findOneAndUpdate(filterObject, updateObject,{ new: true } )
+
 }

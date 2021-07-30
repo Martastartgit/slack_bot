@@ -1,6 +1,8 @@
 module.exports = {
     adminId: require('./adminId'),
+    constants: require('./constants'),
+    channelId: require('./channelId'),
     dataTableName: require('./dataBaseTables'),
-    regExp: require('./regExp')
+    idHR: require('./idHR'),
 
 };

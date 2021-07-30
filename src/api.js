@@ -1,9 +1,17 @@
 const { App, AwsLambdaReceiver } = require('@slack/bolt');
 
 const connectDB = require('./dataBase/connections');
-const { adminId, dataTableName } = require('./constants')
+
+const { adminId,
+    constants,
+    dataTableName,
+    channelId,
+    idHR} = require('./constants')
 const { approvedAttachment,
+    approvedHRBlock,
     attachments_helper,
+    generalChannelMessage,
+    getValueFromApprovedHrBlock,
     getInputValue,
     overflowSection,
     viewCreate,
@@ -58,20 +66,20 @@ app.event('app_mention', async ({ event, say }) => {
 app.action({callback_id: 'actions_bot', type: 'interactive_message'}, async ({action, ack, say }) => {
     await ack();
     switch (action.value) {
-        case 'store': {
+        case dataTableName.STORE: {
             const selectAttachments = await selectMenu(dataTableName.STORE, 'select_store');
 
             await say({
-                text: `Hey pick item`,
+                text: 'Hey pick item',
                 attachments: selectAttachments
             });
             break;
         }
-        case 'list_actions':
+        case dataTableName.ACTION:
             const selectAttachments = await selectMenu(dataTableName.ACTION, 'select_action');
 
             await say({
-                text: `Hey pick item`,
+                text: 'Hey pick item',
                 attachments: selectAttachments
             });
 
@@ -88,7 +96,7 @@ app.command('/add_action', async ({ ack, body, say,client }) => {
 
             return;
         }
-        const viewAction = viewCreate('Action', 'view_1')
+        const viewAction = viewCreate(dataTableName.ACTION, 'view_1')
 
         await client.views.open({
             trigger_id: body.trigger_id,
@@ -109,7 +117,7 @@ app.command('/add_reward', async ({ ack, body, say,client }) => {
 
             return;
         }
-        const viewStore = viewCreate('Store', 'view_2')
+        const viewStore = viewCreate(dataTableName.STORE, 'view_2')
 
         await client.views.open({
             trigger_id: body.trigger_id,
@@ -280,8 +288,8 @@ app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({
     const {rocks} = await action_service.findAction({value: selectValue});
 
     await say({
-        text: `You chose ${selectValue}. It costs ${rocks} rocks`,
-        attachments: approvedAttachment
+        text: `${selectValue}. It costs ${rocks} rocks`,
+        attachments: approvedAttachment(dataTableName.ACTION)
     });
 
 });
@@ -300,11 +308,104 @@ app.action({callback_id: 'select_store', type: 'interactive_message'}, async ({a
     const {rocks} = await store_service.findOneStore({value: selectValue});
 
     await say({
-        text: `You chose ${selectValue}. It costs ${rocks} rocks`,
-        attachments: approvedAttachment
+        text: `${selectValue}. It costs ${rocks} rocks`,
+        attachments: approvedAttachment(dataTableName.STORE)
     });
 
 });
+
+app.action({callback_id: 'approvedAction', type: 'interactive_message'}, async ({action, ack, body, say, client, respond }) => {
+    await ack();
+    switch (action.value) {
+        case constants.YES:
+            await respond({
+                blocks: body.original_message.blocks,
+                attachments: [{text: `<@${body.user.id}> approved action`}],
+                replace_original: true
+            })
+
+            await say(`Your action must be approved by HR. You'll receive a notification about it` );
+
+            const actionName = body.original_message.text.split('.').shift();
+
+            const {rocks} = await action_service.findAction({value: actionName});
+
+            await client.chat.postMessage({
+                channel: `${idHR.HR2}`,
+                blocks: approvedHRBlock(body.user, actionName, rocks),
+                attachments: approvedAttachment(constants.HR)
+            });
+
+            break;
+
+        case constants.NO:
+            await respond({
+                blocks: body.original_message.blocks,
+                attachments: [{text: `<@${body.user.id}> reject action`}],
+                replace_original: true
+            })
+
+            await say('You can choose another action');
+
+            break;
+    }
+});
+
+app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
+    await ack();
+
+    const blocks = body.original_message.blocks;
+
+    const [
+        userValue,
+        actionValue
+    ] = getValueFromApprovedHrBlock(blocks);
+
+    const {id} = await user_service.findUser({name: userValue});
+
+    switch (action.value) {
+        case constants.YES:
+
+            await respond({
+                blocks: body.original_message.blocks,
+                attachments: [{text: `<@${body.user.id}> approved request`}],
+                replace_original: true
+            })
+
+            const chosenAction = await action_service.findAction({value: actionValue});
+
+            const {rocks} = await user_service.updateOne({name: userValue},{$push: {_action: chosenAction},
+                $inc: { rocks: +chosenAction.rocks} });
+
+            await client.chat.postMessage({
+                channel: `${id}`,
+                text: `Your action was approved by HR!`,
+            });
+
+            // await client.chat.postMessage({
+            //     channel: `${channelId.GENERAL}`,
+            //     blocks: generalChannelMessage(id,chosenAction, rocks)
+            // });
+
+            break;
+
+        case constants.NO:
+            await respond({
+                blocks: body.original_message.blocks,
+                attachments: [{text: `<@${body.user.id}> reject request`}],
+                replace_original: true
+            })
+
+            await client.chat.postMessage({
+                channel: `${id}`,
+                text: `Your request was not approved. Please, contact with <@${body.user.id}> for more details`,
+            });
+
+            break;
+
+    }
+});
+
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();
     return handler(event, context, callback);
@@ -320,3 +421,4 @@ module.exports.authorization = (event, context, callback) =>{
     };
     callback(null, response);
 }
+

@@ -9,13 +9,13 @@ module.exports = [{
             name: "bot",
             text: "Store",
             type: "button",
-            value: "store"
+            value: "Store"
         },
         {
             name: "bot",
             text: "List of actions",
             type: "button",
-            value: "list_actions"
+            value: "Action"
         }
 
     ]
