@@ -10,13 +10,15 @@ const { adminId,
 const { approvedAttachment,
     approvedHRBlock,
     attachments_helper,
+    homeView,
     generalChannelMessage,
     getValueFromApprovedHrBlock,
     getInputValue,
     overflowSection,
     viewCreate,
     selectMenu } = require('./helper/');
-const { roxyValidation,
+const { checkUserRocks,
+    roxyValidation,
     textInputValidation } = require('./middleware');
 const { actionService: { action_service },
     userService: { user_service },
@@ -61,6 +63,18 @@ app.event('app_mention', async ({ event, say }) => {
         console.log(e);
     }
 
+});
+
+app.event('app_home_opened', async ({ event, client }) => {
+    try {
+        await client.views.publish({
+            user_id: event.user,
+            view: homeView
+        });
+    }
+    catch (error) {
+        console.error(error);
+    }
 });
 
 app.action({callback_id: 'actions_bot', type: 'interactive_message'}, async ({action, ack, say }) => {
@@ -288,7 +302,7 @@ app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({
     const {rocks} = await action_service.findAction({value: selectValue});
 
     await say({
-        text: `${selectValue}. It costs ${rocks} rocks`,
+        text: `${selectValue}. You get ${rocks} rocks`,
         attachments: approvedAttachment(dataTableName.ACTION)
     });
 
@@ -319,7 +333,7 @@ app.action({callback_id: 'approvedAction', type: 'interactive_message'}, async (
     switch (action.value) {
         case constants.YES:
             await respond({
-                blocks: body.original_message.blocks,
+                text: body.original_message.text,
                 attachments: [{text: `<@${body.user.id}> approved action`}],
                 replace_original: true
             })
@@ -340,12 +354,57 @@ app.action({callback_id: 'approvedAction', type: 'interactive_message'}, async (
 
         case constants.NO:
             await respond({
-                blocks: body.original_message.blocks,
+                text: body.original_message.text,
                 attachments: [{text: `<@${body.user.id}> reject action`}],
                 replace_original: true
             })
 
             await say('You can choose another action');
+
+            break;
+    }
+});
+
+app.action({callback_id: 'approvedStore', type: 'interactive_message'}, async ({action, ack, body, say, client, respond }) => {
+    await ack();
+    switch (action.value) {
+        case constants.YES:
+            await respond({
+                text: body.original_message.text,
+                attachments: [{text: `<@${body.user.id}> approved reward`}],
+                replace_original: true
+            })
+
+            const rewardName = body.original_message.text.split('.').shift();
+
+            const [
+                reward,
+                ifEnoughRocks
+            ] = await checkUserRocks(rewardName, body.user.id);
+
+            if (!ifEnoughRocks) {
+                await say(`Sorry, <@${body.user.id}> don't have enough rocks for this reward`);
+
+                return;
+            }
+
+            const {rocks} = await user_service.updateOne({id: body.user.id},{$push: {_store: reward},
+                $inc: { rocks: -reward.rocks} });
+
+            await client.chat.postMessage({
+                channel: `${body.user.id}`,
+                text: `You chose this reward: ${rewardName} from the store\nyour current balance: ${rocks}`
+
+            });
+
+            break;
+
+        case constants.NO:
+            await respond({
+                text: body.original_message.text,
+                attachments: [{text: `<@${body.user.id}> reject reward`}],
+                replace_original: true
+            })
 
             break;
     }
@@ -382,10 +441,10 @@ app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({act
                 text: `Your action was approved by HR!`,
             });
 
-            // await client.chat.postMessage({
-            //     channel: `${channelId.GENERAL}`,
-            //     blocks: generalChannelMessage(id,chosenAction, rocks)
-            // });
+            await client.chat.postMessage({
+                channel: `${channelId.GENERAL}`,
+                blocks: generalChannelMessage(id,chosenAction, rocks)
+            });
 
             break;
 

@@ -2,6 +2,7 @@ module.exports = {
     approvedAttachment: require('./approvedAtachment'),
     approvedHRBlock: require('./approvedHrBlock'),
     attachments_helper: require('./attachmentsHelper'),
+    homeView: require('./homeView'),
     generalChannelMessage: require('./generalChannelMessage'),
     getValueFromApprovedHrBlock: require('./getBlocksValue'),
     getInputValue: require('./getInputValue'),
