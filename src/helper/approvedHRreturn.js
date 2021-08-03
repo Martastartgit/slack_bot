@@ -4,7 +4,7 @@ module.exports = (user, item, text) => [
     {
         type: "section",
         text: {
-            text: `<@${user.id}> request an action`,
+            text: `<@${user.id}> request to return a reward`,
             type: "mrkdwn"
         }
     },
@@ -16,4 +16,3 @@ module.exports = (user, item, text) => [
         fields: blockFields(user, item, text)
     }
 ]
-

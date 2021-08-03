@@ -6,17 +6,21 @@ const { adminId,
     constants,
     dataTableName,
     channelId,
-    idHR} = require('./constants')
+    idHR,
+    messages} = require('./constants')
 const { approvedAttachment,
     approvedHRBlock,
+    approvedHRreturn,
     attachments_helper,
     homeView,
     generalChannelMessage,
     getValueFromApprovedHrBlock,
     getInputValue,
+    filteredStore,
     overflowSection,
     viewCreate,
-    selectMenu } = require('./helper/');
+    selectMenu,
+    selectReturnReward} = require('./helper/');
 const { checkUserRocks,
     roxyValidation,
     textInputValidation } = require('./middleware');
@@ -287,6 +291,18 @@ app.command('/balance', async ({ ack,body, client }) => {
         console.error(error);
     }
 });
+app.command('/return_reward', async ({ ack,body, client }) => {
+    try {
+        await ack();
+        await client.chat.postMessage({
+            channel: body.user_id,
+            attachments: approvedAttachment(constants.RETURN_REWARD,messages.RETURN_REWARD )
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({action, ack, say }) => {
     await ack();
@@ -303,7 +319,7 @@ app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({
 
     await say({
         text: `${selectValue}. You get ${rocks} rocks`,
-        attachments: approvedAttachment(dataTableName.ACTION)
+        attachments: approvedAttachment(dataTableName.ACTION, messages.APPROVED)
     });
 
 });
@@ -323,7 +339,7 @@ app.action({callback_id: 'select_store', type: 'interactive_message'}, async ({a
 
     await say({
         text: `${selectValue}. It costs ${rocks} rocks`,
-        attachments: approvedAttachment(dataTableName.STORE)
+        attachments: approvedAttachment(dataTableName.STORE,messages.APPROVED)
     });
 
 });
@@ -342,12 +358,12 @@ app.action({callback_id: 'approvedAction', type: 'interactive_message'}, async (
 
             const actionName = body.original_message.text.split('.').shift();
 
-            const {rocks} = await action_service.findAction({value: actionName});
+            const chosenAction = await action_service.findAction({value: actionName});
 
             await client.chat.postMessage({
                 channel: `${idHR.HR2}`,
-                blocks: approvedHRBlock(body.user, actionName, rocks),
-                attachments: approvedAttachment(constants.HR)
+                blocks: approvedHRBlock(body.user, chosenAction, dataTableName.ACTION),
+                attachments: approvedAttachment(constants.APPROVED_HR_ACTION, messages.APPROVED)
             });
 
             break;
@@ -410,15 +426,15 @@ app.action({callback_id: 'approvedStore', type: 'interactive_message'}, async ({
     }
 });
 
-app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
+app.action({callback_id: 'approvedHr_action', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
     await ack();
 
-    const blocks = body.original_message.blocks;
+    const block = body.original_message.blocks;
 
     const [
         userValue,
         actionValue
-    ] = getValueFromApprovedHrBlock(blocks);
+    ] = getValueFromApprovedHrBlock(block);
 
     const {id} = await user_service.findUser({name: userValue});
 
@@ -426,7 +442,7 @@ app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({act
         case constants.YES:
 
             await respond({
-                blocks: body.original_message.blocks,
+                blocks: block,
                 attachments: [{text: `<@${body.user.id}> approved request`}],
                 replace_original: true
             })
@@ -450,7 +466,7 @@ app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({act
 
         case constants.NO:
             await respond({
-                blocks: body.original_message.blocks,
+                blocks: block,
                 attachments: [{text: `<@${body.user.id}> reject request`}],
                 replace_original: true
             })
@@ -458,6 +474,101 @@ app.action({callback_id: 'approvedHr', type: 'interactive_message'}, async ({act
             await client.chat.postMessage({
                 channel: `${id}`,
                 text: `Your request was not approved. Please, contact with <@${body.user.id}> for more details`,
+            });
+
+            break;
+
+    }
+});
+
+app.action({callback_id: 'approvedReturn_reward', type: 'interactive_message'},
+    async ({action, ack, body, say, respond }) => {
+        await ack();
+        switch (action.value) {
+            case constants.YES:
+                await respond({
+                    text: `<@${body.user.id}> approved return`,
+                    replace_original: true
+                })
+
+                const userRewards = await user_service.findUserRewards({id: body.user.id});
+
+                await say({
+                    blocks: selectReturnReward(userRewards)
+                })
+
+                break;
+
+            case constants.NO:
+                await respond({
+                    text: `<@${body.user.id}> reject return`,
+                    replace_original: true
+                })
+
+                break;
+        }
+    });
+
+app.action( 'static_select-reward', async ({action, ack,
+    body, say, client}) => {
+    await ack();
+
+    const rewardName = action.selected_option.value;
+
+    await say(`You selected ${rewardName}\nYour return must be approved by HR.You'll receive a notification`);
+
+    const reward = await store_service.findOneStore({value: rewardName});
+
+    await client.chat.postMessage({
+        channel: `${idHR.HR2}`,
+        blocks: approvedHRreturn(body.user, reward, constants.REWARD),
+        attachments: approvedAttachment(constants.APPROVED_HR_Return, messages.APPROVED)
+    });
+});
+
+app.action({callback_id: 'approvedHr_return', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
+    await ack();
+
+    const block = body.original_message.blocks;
+
+    const [
+        userValue,
+        actionValue
+    ] = getValueFromApprovedHrBlock(block);
+
+    const {id} = await user_service.findUser({name: userValue});
+
+    switch (action.value) {
+        case constants.YES:
+
+            await respond({
+                blocks: block,
+                attachments: [{text: `<@${body.user.id}> approved return`}],
+                replace_original: true
+            })
+
+            const [
+                reward,
+                rocks
+            ] = await filteredStore(userValue, actionValue);
+
+            await client.chat.postMessage({
+                channel: `${id}`,
+                text: `HR approved your return action: ${reward.value}\nCurrent balance: ${rocks}`,
+            });
+
+            break;
+
+        case constants.NO:
+            await respond({
+                blocks: block,
+                attachments: [{text: `<@${body.user.id}> reject return`}],
+                replace_original: true
+            })
+
+            await client.chat.postMessage({
+                channel: `${id}`,
+                text: `Your return was not approved. Please, contact with <@${body.user.id}> for more details`,
             });
 
             break;

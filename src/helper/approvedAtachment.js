@@ -1,5 +1,5 @@
-module.exports = (callback)=> [{
-    text: "Do you want to approve?",
+module.exports = (callback, text)=> [{
+    text: `${text}`,
     fallback: "You are unable to approve",
     color: "#3AA3E3",
     callback_id: `approved${callback}`,

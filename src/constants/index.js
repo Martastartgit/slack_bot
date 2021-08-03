@@ -4,5 +4,5 @@ module.exports = {
     channelId: require('./channelId'),
     dataTableName: require('./dataBaseTables'),
     idHR: require('./idHR'),
-
+    messages: require('./messages')
 };
