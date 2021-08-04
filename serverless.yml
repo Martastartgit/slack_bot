@@ -7,6 +7,11 @@ provider:
   environment:
     SLACK_SIGNING_SECRET:  ${env:SLACK_SIGNING_SECRET}
     SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    MONGO_URL: ${env:MONGO_URL}
+    ADMINS: ${env:ADMINS}
+    HR1: ${env:HR1}
+    HR2: ${env:HR2}
+    CHANNEL_GENERAL_ID: ${env:CHANNEL_GENERAL_ID}
 functions:
   authorization:
     handler: src/api.authorization

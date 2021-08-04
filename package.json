@@ -1,7 +1,7 @@
 {
   "name": "bonus_bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,10 +10,15 @@
   "license": "ISC",
   "dependencies": {
     "@slack/bolt": "^3.5.0",
-    "mongoose": "^5.13.3"
+    "mongoose": "^5.13.3",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
     "eslint": "^7.31.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
     "serverless": "^2.52.1",
     "serverless-offline": "^7.0.0"
   },

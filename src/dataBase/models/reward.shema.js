@@ -1,8 +1,8 @@
 const { Schema, model } = require('mongoose');
 
-const { dataTableName: { STORE } } = require('../../constants');
+const { dataTableName: { REWARD } } = require('../../constants');
 
-const StoreScheme = new Schema({
+const RewardScheme = new Schema({
     id: String,
     value: {
         type: String,
@@ -16,4 +16,4 @@ const StoreScheme = new Schema({
     }
 
 });
-module.exports = model(STORE, StoreScheme);
+module.exports = model(REWARD, RewardScheme);

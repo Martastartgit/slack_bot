@@ -2,18 +2,17 @@ const blockFields = require('./blockFields');
 
 module.exports = (user, item, text) => [
     {
-        type: "section",
+        type: 'section',
         text: {
             text: `<@${user.id}> request an action`,
-            type: "mrkdwn"
+            type: 'mrkdwn'
         }
     },
     {
-        type: "divider"
+        type: 'divider'
     },
     {
-        type: "section",
+        type: 'section',
         fields: blockFields(user, item, text)
     }
-]
-
+];

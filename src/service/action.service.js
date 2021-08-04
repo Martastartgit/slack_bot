@@ -1,10 +1,10 @@
-const {Action} = require('../../dataBase/models')
+const { Action } = require('../dataBase/models');
 
-module.exports ={
+module.exports = {
     createAction: (actionObject) => Action.create(actionObject),
 
     getAllListOfActions: () => Action.find(),
 
     findAction: (filterObject) => Action.findOne(filterObject),
 
-}
+};

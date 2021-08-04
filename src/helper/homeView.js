@@ -3,23 +3,23 @@ module.exports = {
     callback_id: 'home_view',
     blocks: [
         {
-            type: "section",
+            type: 'section',
             text: {
-                type: "mrkdwn",
-                text: "*Welcome to bonusBot Home* :tada:"
+                type: 'mrkdwn',
+                text: '*Welcome to bonusBot Home* :tada:'
             }
         },
         {
-            type: "divider"
+            type: 'divider'
         },
         {
-            type: "section",
+            type: 'section',
             text: {
-                type: "mrkdwn",
-                text: "Using this bot, you can get rocks, making different actions." +
-                    "Then you can exchange these rocks for rewards at the store "
+                type: 'mrkdwn',
+                text: 'Using this bot, you can get rocks, making different actions.'
+                    + 'Then you can exchange these rocks for rewards at the store '
             }
         }
 
     ]
-}
+};

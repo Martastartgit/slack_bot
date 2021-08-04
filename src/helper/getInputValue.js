@@ -6,5 +6,4 @@ module.exports = (text, roxy) => {
         textValue,
         roxyValue
     };
-
-}
+};

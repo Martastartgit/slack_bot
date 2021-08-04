@@ -4,10 +4,16 @@ module.exports = {
         node: true,
         es2021: true
     },
-    extends: "eslint:recommended",
+    globals: {},
+    extends: [
+        'airbnb-base',
+        'eslint:recommended',
+
+    ],
     parserOptions: {
         ecmaVersion: 12
     },
+    plugins: [],
     rules: {
         'array-bracket-newline': [
             'error',

@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const { dataTableName: { USER, ACTION, STORE } } = require('../../constants');
+const { dataTableName: { ACTION, REWARD, USER } } = require('../../constants');
 
 const UserScheme = new Schema({
     id: String,
@@ -9,12 +9,13 @@ const UserScheme = new Schema({
         type: Number,
         default: 10
     },
-    _action: [{
+    actions: [{
         type: Schema.Types.ObjectId, ref: ACTION
     }],
-    _store: [{
-        type: Schema.Types.ObjectId, ref: STORE
+    rewards: [{
+        type: Schema.Types.ObjectId, ref: REWARD
     }]
 
 });
+
 module.exports = model(USER, UserScheme);

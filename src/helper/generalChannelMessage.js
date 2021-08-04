@@ -1,26 +1,26 @@
 module.exports = (id, chosenAction, rocks) => [
     {
-        type: "header",
+        type: 'header',
         text: {
-            type: "plain_text",
-            text: "Balance notification"
+            type: 'plain_text',
+            text: 'Balance notification'
         }
     },
     {
-        type: "divider"
+        type: 'divider'
     },
     {
-        type: "section",
+        type: 'section',
         text: {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `<@${id}>has received *${chosenAction.rocks}* rocks.`
         }
     },
     {
-        type: "section",
+        type: 'section',
         text: {
-            type: "mrkdwn",
+            type: 'mrkdwn',
             text: `For this action: *${chosenAction.value}*\nCurrent balance: *${rocks}*`
         }
     }
-]
+];

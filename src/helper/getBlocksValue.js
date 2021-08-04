@@ -1,13 +1,10 @@
 module.exports = (blocks) => {
     const test = [];
 
-    blocks.map(({fields}) => {
-        // eslint-disable-next-line no-unused-expressions
-        fields && fields.map(({text})=> {
-            const value = text.split('\n');
-            test.push(value);
-        });
-    });
+    blocks.map(({ fields }) => fields && fields.map(({ text }) => {
+        const value = text.split('\n');
+        return test.push(value);
+    }));
 
     const [
         user,
@@ -20,5 +17,5 @@ module.exports = (blocks) => {
     return [
         userValue.trim(),
         actionValue.trim()
-    ]
-}
+    ];
+};

@@ -1,5 +1,5 @@
 module.exports = {
-    actionService: require('./action'),
-    userService: require('./user'),
-    storeService: require('./store')
-}
+    actionService: require('./action.service'),
+    userService: require('./user.service'),
+    rewardService: require('./reward.service')
+};

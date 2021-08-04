@@ -1,5 +1,5 @@
 module.exports = {
-    STORE: 'Store',
+    REWARD: 'Reward',
     USER: 'User',
     ACTION: 'Action'
 };

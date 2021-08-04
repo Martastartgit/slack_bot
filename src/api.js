@@ -1,594 +1,82 @@
 const { App, AwsLambdaReceiver } = require('@slack/bolt');
+require('dotenv').config();
 
 const connectDB = require('./dataBase/connections');
-
-const { adminId,
-    constants,
-    dataTableName,
-    channelId,
-    idHR,
-    messages} = require('./constants')
-const { approvedAttachment,
-    approvedHRBlock,
-    approvedHRreturn,
-    attachments_helper,
-    homeView,
-    generalChannelMessage,
-    getValueFromApprovedHrBlock,
-    getInputValue,
-    filteredStore,
-    overflowSection,
-    viewCreate,
-    selectMenu,
-    selectReturnReward} = require('./helper/');
-const { checkUserRocks,
-    roxyValidation,
-    textInputValidation } = require('./middleware');
-const { actionService: { action_service },
-    userService: { user_service },
-    storeService: { store_service }} = require('./service')
-
+const { SLACK_SIGNING_SECRET, SLACK_BOT_TOKEN } = require('./config/config');
+const { getAllUsers } = require('./helper');
+const {
+    actionsListener, eventsListener, commandsListener, viewListener
+} = require('./listeners');
 
 const awsLambdaReceiver = new AwsLambdaReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET,
+    signingSecret: SLACK_SIGNING_SECRET,
 });
 
 connectDB();
 
 const app = new App({
-    token: process.env.SLACK_BOT_TOKEN,
+    token: SLACK_BOT_TOKEN,
     receiver: awsLambdaReceiver,
     processBeforeResponse: true
 });
 
 (async () => {
-    const result = await app.client.users.list({
-        token: process.env.SLACK_BOT_TOKEN
-    });
-
-    return result.members.map(async ({id, name, is_bot}) => {
-        const userExist = await user_service.findUser({id});
-
-        if(!userExist && is_bot === false && name !== 'slackbot') {
-            await user_service.createUser({id, name})
-        }
-
-    })
+    await getAllUsers(app);
 })();
 
-app.event('app_mention', async ({ event, say }) => {
-    try {
-        await say({
-            text: `Hey <@${event.user}> you mentioned me`,
-            attachments: attachments_helper
-        });
-    }
-    catch (e) {
-        console.log(e);
-    }
+app.event('app_mention', eventsListener.appMention);
 
-});
+app.event('app_home_opened', eventsListener.appHomeOpened);
 
-app.event('app_home_opened', async ({ event, client }) => {
-    try {
-        await client.views.publish({
-            user_id: event.user,
-            view: homeView
-        });
-    }
-    catch (error) {
-        console.error(error);
-    }
-});
+app.action({ callback_id: 'actions_bot', type: 'interactive_message' }, actionsListener.appMentionAction);
 
-app.action({callback_id: 'actions_bot', type: 'interactive_message'}, async ({action, ack, say }) => {
-    await ack();
-    switch (action.value) {
-        case dataTableName.STORE: {
-            const selectAttachments = await selectMenu(dataTableName.STORE, 'select_store');
+app.command('/add_action', commandsListener.addAction);
 
-            await say({
-                text: 'Hey pick item',
-                attachments: selectAttachments
-            });
-            break;
-        }
-        case dataTableName.ACTION:
-            const selectAttachments = await selectMenu(dataTableName.ACTION, 'select_action');
+app.command('/add_reward', commandsListener.addReward);
 
-            await say({
-                text: 'Hey pick item',
-                attachments: selectAttachments
-            });
+app.view('view_1', viewListener.modalViewAction);
 
-            break;
-    }
-});
+app.view('view_2', viewListener.modalViewReward);
 
-app.command('/add_action', async ({ ack, body, say,client }) => {
-    try {
-        await ack();
+app.command('/get_actions', commandsListener.getAllActions);
 
-        if (!adminId.includes(body.user_id)){
-            await say('Access deny');
+app.command('/get_rewards', commandsListener.getAllRewards);
 
-            return;
-        }
-        const viewAction = viewCreate(dataTableName.ACTION, 'view_1')
+app.command('/menu', commandsListener.botMenu);
 
-        await client.views.open({
-            trigger_id: body.trigger_id,
-            view: viewAction
-        });
+app.command('/balance', commandsListener.userBalance);
 
-    } catch (error) {
-        console.error(error);
-    }
-});
+app.command('/return_reward', commandsListener.returnReward);
 
-app.command('/add_reward', async ({ ack, body, say,client }) => {
-    try {
-        await ack();
+app.action({ callback_id: 'select_action', type: 'interactive_message' }, actionsListener.selectAction);
 
-        if (!adminId.includes(body.user_id)){
-            await say('Access deny');
+app.action({ callback_id: 'select_store', type: 'interactive_message' }, actionsListener.selectStore);
 
-            return;
-        }
-        const viewStore = viewCreate(dataTableName.STORE, 'view_2')
+app.action({ callback_id: 'approvedAction', type: 'interactive_message' }, actionsListener.approvedActionByUser);
 
-        await client.views.open({
-            trigger_id: body.trigger_id,
-            view: viewStore
-        });
+app.action({ callback_id: 'approvedReward', type: 'interactive_message' }, actionsListener.approvedRewardByUser);
 
-    } catch (error) {
-        console.error(error);
-    }
-});
+app.action({ callback_id: 'approvedHr_action', type: 'interactive_message' }, actionsListener.approvedActionByHR);
 
-app.view('view_1', async ({ ack, body, view, client }) =>{
-    const [
-        actionInput,
-        roxyInput
-    ] = Object.values(view.state.values);
-    const { textValue, roxyValue} = getInputValue(actionInput, roxyInput);
+app.action({ callback_id: 'approvedReturn_reward', type: 'interactive_message' },
+    actionsListener.approvedReturnReward);
 
-    const ifRoxyNotValid = roxyValidation(Number(roxyValue));
-    const ifTextValid = textInputValidation(textValue);
+app.action('static_select-reward', actionsListener.selectRewardReturn);
 
-    if (ifRoxyNotValid) {
-        await ack({
-            response_action: 'errors',
-            errors: {
-                roxy_block: 'Not valid input'
-            }
-        });
-
-        return;
-    }
-
-    if (!ifTextValid) {
-        await ack({
-            response_action: 'errors',
-            errors: {
-                action_block: 'Not valid input'
-            }
-        });
-
-        return;
-    }
-
-    await ack();
-
-    await action_service.createAction({value: textValue, rocks: Number(roxyValue)})
-
-    await client.chat.postMessage({
-        channel: body.user.id,
-        text: 'Action create'
-    });
-});
-
-app.view('view_2' , async ({ ack, body, view, client }) =>{
-    const [
-        actionInput,
-        roxyInput
-    ] = Object.values(view.state.values);
-    const { textValue, roxyValue} = getInputValue(actionInput, roxyInput);
-
-    const ifRoxyNotValid = roxyValidation(Number(roxyValue));
-    const ifTextValid = textInputValidation(textValue);
-
-    if (ifRoxyNotValid) {
-        await ack({
-            response_action: 'errors',
-            errors: {
-                roxy_block: 'Not valid input'
-            }
-        });
-
-        return;
-    }
-
-    if (!ifTextValid) {
-        await ack({
-            response_action: 'errors',
-            errors: {
-                action_block: 'Not valid input'
-            }
-        });
-
-        return;
-    }
-
-    await ack();
-
-    await store_service.createStore({value: textValue, rocks: Number(roxyValue)})
-
-    await client.chat.postMessage({
-        channel: body.user.id,
-        text: 'Reward create'
-    });
-});
-
-app.command('/get_actions', async ({ ack, say }) => {
-    try {
-        await ack();
-
-        const selectAttachments = await selectMenu(dataTableName.ACTION, 'select_action');
-
-        await say({
-            text: `Hey pick item`,
-            attachments: selectAttachments
-        });
-
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.command('/get_rewards', async ({ ack, say }) => {
-    try {
-        await ack();
-
-        const selectAttachments = await selectMenu(dataTableName.STORE, 'select_store');
-
-        await say({
-            text: `Hey pick item`,
-            attachments: selectAttachments
-        });
-
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.command('/menu', async ({ ack, say }) => {
-    try {
-        await ack();
-
-        await say({
-            blocks: overflowSection
-        });
-
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.command('/balance', async ({ ack,body, client }) => {
-    try {
-        await ack();
-
-        const {rocks} = await user_service.findUser({id: body.user_id})
-
-        await client.chat.postMessage({
-            channel: body.user_id,
-            text: `You have ${rocks} rocks`
-        });
-
-    } catch (error) {
-        console.error(error);
-    }
-});
-app.command('/return_reward', async ({ ack,body, client }) => {
-    try {
-        await ack();
-        await client.chat.postMessage({
-            channel: body.user_id,
-            attachments: approvedAttachment(constants.RETURN_REWARD,messages.RETURN_REWARD )
-        });
-
-    } catch (error) {
-        console.error(error);
-    }
-});
-
-app.action({callback_id: 'select_action', type: 'interactive_message'}, async ({action, ack, say }) => {
-    await ack();
-
-    let selectValue = '';
-
-    const {selected_options} = action;
-
-    selected_options.map(({value}) => {
-        selectValue = value
-    });
-
-    const {rocks} = await action_service.findAction({value: selectValue});
-
-    await say({
-        text: `${selectValue}. You get ${rocks} rocks`,
-        attachments: approvedAttachment(dataTableName.ACTION, messages.APPROVED)
-    });
-
-});
-
-app.action({callback_id: 'select_store', type: 'interactive_message'}, async ({action, ack, say }) => {
-    await ack();
-
-    let selectValue = '';
-
-    const {selected_options} = action;
-
-    selected_options.map(({value}) => {
-        selectValue = value
-    });
-
-    const {rocks} = await store_service.findOneStore({value: selectValue});
-
-    await say({
-        text: `${selectValue}. It costs ${rocks} rocks`,
-        attachments: approvedAttachment(dataTableName.STORE,messages.APPROVED)
-    });
-
-});
-
-app.action({callback_id: 'approvedAction', type: 'interactive_message'}, async ({action, ack, body, say, client, respond }) => {
-    await ack();
-    switch (action.value) {
-        case constants.YES:
-            await respond({
-                text: body.original_message.text,
-                attachments: [{text: `<@${body.user.id}> approved action`}],
-                replace_original: true
-            })
-
-            await say(`Your action must be approved by HR. You'll receive a notification about it` );
-
-            const actionName = body.original_message.text.split('.').shift();
-
-            const chosenAction = await action_service.findAction({value: actionName});
-
-            await client.chat.postMessage({
-                channel: `${idHR.HR2}`,
-                blocks: approvedHRBlock(body.user, chosenAction, dataTableName.ACTION),
-                attachments: approvedAttachment(constants.APPROVED_HR_ACTION, messages.APPROVED)
-            });
-
-            break;
-
-        case constants.NO:
-            await respond({
-                text: body.original_message.text,
-                attachments: [{text: `<@${body.user.id}> reject action`}],
-                replace_original: true
-            })
-
-            await say('You can choose another action');
-
-            break;
-    }
-});
-
-app.action({callback_id: 'approvedStore', type: 'interactive_message'}, async ({action, ack, body, say, client, respond }) => {
-    await ack();
-    switch (action.value) {
-        case constants.YES:
-            await respond({
-                text: body.original_message.text,
-                attachments: [{text: `<@${body.user.id}> approved reward`}],
-                replace_original: true
-            })
-
-            const rewardName = body.original_message.text.split('.').shift();
-
-            const [
-                reward,
-                ifEnoughRocks
-            ] = await checkUserRocks(rewardName, body.user.id);
-
-            if (!ifEnoughRocks) {
-                await say(`Sorry, <@${body.user.id}> don't have enough rocks for this reward`);
-
-                return;
-            }
-
-            const {rocks} = await user_service.updateOne({id: body.user.id},{$push: {_store: reward},
-                $inc: { rocks: -reward.rocks} });
-
-            await client.chat.postMessage({
-                channel: `${body.user.id}`,
-                text: `You chose this reward: ${rewardName} from the store\nyour current balance: ${rocks}`
-
-            });
-
-            break;
-
-        case constants.NO:
-            await respond({
-                text: body.original_message.text,
-                attachments: [{text: `<@${body.user.id}> reject reward`}],
-                replace_original: true
-            })
-
-            break;
-    }
-});
-
-app.action({callback_id: 'approvedHr_action', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
-    await ack();
-
-    const block = body.original_message.blocks;
-
-    const [
-        userValue,
-        actionValue
-    ] = getValueFromApprovedHrBlock(block);
-
-    const {id} = await user_service.findUser({name: userValue});
-
-    switch (action.value) {
-        case constants.YES:
-
-            await respond({
-                blocks: block,
-                attachments: [{text: `<@${body.user.id}> approved request`}],
-                replace_original: true
-            })
-
-            const chosenAction = await action_service.findAction({value: actionValue});
-
-            const {rocks} = await user_service.updateOne({name: userValue},{$push: {_action: chosenAction},
-                $inc: { rocks: +chosenAction.rocks} });
-
-            await client.chat.postMessage({
-                channel: `${id}`,
-                text: `Your action was approved by HR!`,
-            });
-
-            await client.chat.postMessage({
-                channel: `${channelId.GENERAL}`,
-                blocks: generalChannelMessage(id,chosenAction, rocks)
-            });
-
-            break;
-
-        case constants.NO:
-            await respond({
-                blocks: block,
-                attachments: [{text: `<@${body.user.id}> reject request`}],
-                replace_original: true
-            })
-
-            await client.chat.postMessage({
-                channel: `${id}`,
-                text: `Your request was not approved. Please, contact with <@${body.user.id}> for more details`,
-            });
-
-            break;
-
-    }
-});
-
-app.action({callback_id: 'approvedReturn_reward', type: 'interactive_message'},
-    async ({action, ack, body, say, respond }) => {
-        await ack();
-        switch (action.value) {
-            case constants.YES:
-                await respond({
-                    text: `<@${body.user.id}> approved return`,
-                    replace_original: true
-                })
-
-                const userRewards = await user_service.findUserRewards({id: body.user.id});
-
-                await say({
-                    blocks: selectReturnReward(userRewards)
-                })
-
-                break;
-
-            case constants.NO:
-                await respond({
-                    text: `<@${body.user.id}> reject return`,
-                    replace_original: true
-                })
-
-                break;
-        }
-    });
-
-app.action( 'static_select-reward', async ({action, ack,
-    body, say, client}) => {
-    await ack();
-
-    const rewardName = action.selected_option.value;
-
-    await say(`You selected ${rewardName}\nYour return must be approved by HR.You'll receive a notification`);
-
-    const reward = await store_service.findOneStore({value: rewardName});
-
-    await client.chat.postMessage({
-        channel: `${idHR.HR2}`,
-        blocks: approvedHRreturn(body.user, reward, constants.REWARD),
-        attachments: approvedAttachment(constants.APPROVED_HR_Return, messages.APPROVED)
-    });
-});
-
-app.action({callback_id: 'approvedHr_return', type: 'interactive_message'}, async ({action, ack, body, respond, client }) => {
-    await ack();
-
-    const block = body.original_message.blocks;
-
-    const [
-        userValue,
-        actionValue
-    ] = getValueFromApprovedHrBlock(block);
-
-    const {id} = await user_service.findUser({name: userValue});
-
-    switch (action.value) {
-        case constants.YES:
-
-            await respond({
-                blocks: block,
-                attachments: [{text: `<@${body.user.id}> approved return`}],
-                replace_original: true
-            })
-
-            const [
-                reward,
-                rocks
-            ] = await filteredStore(userValue, actionValue);
-
-            await client.chat.postMessage({
-                channel: `${id}`,
-                text: `HR approved your return action: ${reward.value}\nCurrent balance: ${rocks}`,
-            });
-
-            break;
-
-        case constants.NO:
-            await respond({
-                blocks: block,
-                attachments: [{text: `<@${body.user.id}> reject return`}],
-                replace_original: true
-            })
-
-            await client.chat.postMessage({
-                channel: `${id}`,
-                text: `Your return was not approved. Please, contact with <@${body.user.id}> for more details`,
-            });
-
-            break;
-
-    }
-});
+app.action({ callback_id: 'approvedHr_return', type: 'interactive_message' }, actionsListener.approvedReturnByHR);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();
     return handler(event, context, callback);
-}
+};
 
-module.exports.authorization = (event, context, callback) =>{
+module.exports.authorization = (event, context, callback) => {
     const response = {
         statusCode: 200,
         body: JSON.stringify({
-            message: "Authorization was called",
+            message: 'Authorization was called',
             input: event
         }),
     };
     callback(null, response);
-}
-
+};

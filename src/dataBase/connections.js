@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
-const URI = 'mongodb+srv://dbUser:dbUser@slackcluster.fqo3f.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+const { MONGO_URL } = require('../config/config');
 
 const connectDB = async () => {
-    await mongoose.connect(URI, {
+    await mongoose.connect(MONGO_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useFindAndModify: false
     });
-    console.log('DB connect!')
-}
+    console.log('DB connect!');
+};
 
 module.exports = connectDB;

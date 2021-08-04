@@ -1,14 +1,14 @@
 module.exports = (user, item, text) => [
     {
-        type: "mrkdwn",
+        type: 'mrkdwn',
         text: `*User name:*\n${user.name} `
     },
     {
-        type: "mrkdwn",
+        type: 'mrkdwn',
         text: `*${text}:*\n${item.value}`
     },
     {
-        type: "mrkdwn",
+        type: 'mrkdwn',
         text: `*Rocks:*\n${item.rocks}`
     }
-]
+];

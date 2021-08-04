@@ -49,4 +49,4 @@ module.exports = (text, callbackId) => ({
         type: 'plain_text',
         text: 'Cancel'
     }
-})
+});
