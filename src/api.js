@@ -26,8 +26,6 @@ const app = new App({
 
 app.event('app_mention', eventsListener.appMention);
 
-app.event('app_home_opened', eventsListener.appHomeOpened);
-
 app.action({ callback_id: 'actions_bot', type: 'interactive_message' }, actionsListener.appMentionAction);
 
 app.command('/add_action', commandsListener.addAction);
@@ -58,12 +56,11 @@ app.action({ callback_id: 'approvedReward', type: 'interactive_message' }, actio
 
 app.action({ callback_id: 'approvedHr_action', type: 'interactive_message' }, actionsListener.approvedActionByHR);
 
-app.action({ callback_id: 'approvedReturn_reward', type: 'interactive_message' },
-    actionsListener.approvedReturnReward);
-
-app.action('static_select-reward', actionsListener.selectRewardReturn);
+app.action({ callback_id: 'static_select-reward', type: 'interactive_message' }, actionsListener.selectRewardReturn);
 
 app.action({ callback_id: 'approvedHr_return', type: 'interactive_message' }, actionsListener.approvedReturnByHR);
+
+app.action('static_select-command', actionsListener.selectCommand);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();

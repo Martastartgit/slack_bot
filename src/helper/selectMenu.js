@@ -15,7 +15,7 @@ const createOptions = async (text) => {
 
     return options.map((item) => ({
         type: 'plain_text',
-        text: `${item.value}`,
+        text: `${item.value} - rocks:${item.rocks}`,
         value: `${item.value}`
     }));
 };
@@ -30,7 +30,7 @@ module.exports = async (text, callback) => {
         attachment_type: 'default',
         actions: [{
             name: 'list',
-            text: 'Pick item',
+            text: 'Select item',
             type: 'select',
             options: allOptions
         }]

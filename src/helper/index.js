@@ -3,7 +3,6 @@ module.exports = {
     approvedHRBlock: require('./approvedHrBlock'),
     approvedHRreturn: require('./approvedHRreturn'),
     attachments_helper: require('./attachmentsHelper'),
-    homeView: require('./homeView'),
     generalChannelMessage: require('./generalChannelMessage'),
     getAllUsers: require('./getAllUsers'),
     getValueFromApprovedHrBlock: require('./getBlocksValue'),

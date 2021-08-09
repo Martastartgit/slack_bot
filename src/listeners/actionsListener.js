@@ -1,7 +1,7 @@
 const {
     constants, messages
 } = require('../constants');
-const { CHANNEL_GENERAL_ID, HR2 } = require('../config/config');
+const { ADMINS, CHANNEL_GENERAL_ID, HR2 } = require('../config/config');
 const {
     approvedAttachment,
     approvedHRBlock,
@@ -10,7 +10,8 @@ const {
     filteredStore,
     getValueFromApprovedHrBlock,
     generalChannelMessage,
-    selectReturnReward
+    selectReturnReward,
+    viewCreate
 } = require('../helper');
 const { checkUserRocks } = require('../middleware');
 const { actionService, userService, rewardService } = require('../service');
@@ -41,44 +42,40 @@ module.exports = {
         }
     },
 
-    selectAction: async ({ action, ack, say }) => {
+    selectAction: async ({ action, ack, respond }) => {
         await ack();
 
-        const { selected_options } = action;
-
-        const selectValue = selected_options.map(({ value }) => value);
+        const selectValue = action.selected_options.map(({ value }) => value);
 
         const { rocks } = await actionService.findAction({ value: selectValue });
 
-        await say({
-            text: `${selectValue}. You get ${rocks} rocks`,
+        await respond({
+            text: `${selectValue}. You'll get ${rocks} rocks.`,
             attachments: approvedAttachment(constants.ACTION, messages.APPROVED)
         });
     },
 
-    selectStore: async ({ action, ack, say }) => {
+    selectStore: async ({ action, ack, respond }) => {
         await ack();
 
-        const { selected_options } = action;
-
-        const selectValue = selected_options.map(({ value }) => value);
+        const selectValue = action.selected_options.map(({ value }) => value);
 
         const { rocks } = await rewardService.findOneReward({ value: selectValue });
 
-        await say({
-            text: `${selectValue}. It costs ${rocks} rocks`,
+        await respond({
+            text: `${selectValue}. It costs ${rocks} rocks.`,
             attachments: approvedAttachment(constants.REWARD, messages.APPROVED)
         });
     },
 
     selectRewardReturn: async ({
-        action, ack, body, say, client
+        action, ack, body, respond, client
     }) => {
         await ack();
 
-        const rewardName = action.selected_option.value;
+        const rewardName = action.selected_options.map(({ value }) => value);
 
-        await say(`You selected ${rewardName}\nYour return must be approved by HR.You'll receive a notification`);
+        await respond(`You selected: ${rewardName} \nYour return must be approved by HR. You'll receive a notification.`);
 
         const reward = await rewardService.findOneReward({ value: rewardName });
 
@@ -90,18 +87,17 @@ module.exports = {
     },
 
     approvedActionByUser: async ({
-        action, ack, body, say, client, respond
+        action, ack, body, client, respond
     }) => {
         await ack();
+
         switch (action.value) {
             case constants.YES:
                 await respond({
                     text: body.original_message.text,
-                    attachments: [{ text: `<@${body.user.id}> approved action` }],
+                    attachments: [{ text: 'Your action must be approved by HR. You\'ll receive a notification about it!' }],
                     replace_original: true
                 });
-
-                await say('Your action must be approved by HR. You\'ll receive a notification about it');
 
                 const actionName = body.original_message.text.split('.').shift();
 
@@ -118,28 +114,21 @@ module.exports = {
             case constants.NO:
                 await respond({
                     text: body.original_message.text,
-                    attachments: [{ text: `<@${body.user.id}> reject action` }],
+                    attachments: [{ text: 'You can choose another action from the list.' }],
                     replace_original: true
                 });
-
-                await say('You can choose another action');
 
                 break;
         }
     },
 
     approvedRewardByUser: async ({
-        action, ack, body, say, client, respond
+        action, ack, body, client, respond
     }) => {
         await ack();
+
         switch (action.value) {
             case constants.YES:
-                await respond({
-                    text: body.original_message.text,
-                    attachments: [{ text: `<@${body.user.id}> approved reward` }],
-                    replace_original: true
-                });
-
                 const rewardName = body.original_message.text.split('.').shift();
 
                 const [
@@ -148,7 +137,11 @@ module.exports = {
                 ] = await checkUserRocks(rewardName, body.user.id);
 
                 if (!ifEnoughRocks) {
-                    await say(`Sorry, <@${body.user.id}> don't have enough rocks for this reward`);
+                    await respond({
+                        text: body.original_message.text,
+                        attachments: [{ text: 'Sorry, you don\'t have enough rocks for this reward.' }],
+                        replace_original: true
+                    });
 
                     return;
                 }
@@ -158,9 +151,14 @@ module.exports = {
                     $inc: { rocks: -reward.rocks }
                 });
 
+                await respond({
+                    text: `You chose this reward: ${rewardName}\nYour current balance: ${rocks} rocks`,
+                    replace_original: true
+                });
+
                 await client.chat.postMessage({
-                    channel: `${body.user.id}`,
-                    text: `You chose this reward: ${rewardName} from the store\nyour current balance: ${rocks}`
+                    channel: `${HR2}`,
+                    text: `<@${body.user.id}> chose this reward: ${rewardName}\n User's balance: ${rocks} rocks`
 
                 });
 
@@ -169,7 +167,7 @@ module.exports = {
             case constants.NO:
                 await respond({
                     text: body.original_message.text,
-                    attachments: [{ text: `<@${body.user.id}> reject reward` }],
+                    attachments: [{ text: 'You can choose another reward from the store.' }],
                     replace_original: true
                 });
 
@@ -196,7 +194,7 @@ module.exports = {
 
                 await respond({
                     blocks: block,
-                    attachments: [{ text: `<@${body.user.id}> approved request` }],
+                    attachments: [{ text: `<@${body.user.id}> approved request.` }],
                     replace_original: true
                 });
 
@@ -222,48 +220,13 @@ module.exports = {
             case constants.NO:
                 await respond({
                     blocks: block,
-                    attachments: [{ text: `<@${body.user.id}> reject request` }],
+                    attachments: [{ text: `<@${body.user.id}> rejected request.` }],
                     replace_original: true
                 });
 
                 await client.chat.postMessage({
                     channel: `${id}`,
-                    text: `Your request was not approved. Please, contact with <@${body.user.id}> for more details`,
-                });
-
-                break;
-        }
-    },
-
-    approvedReturnReward: async ({
-        action, ack, body, say, respond
-    }) => {
-        await ack();
-        switch (action.value) {
-            case constants.YES:
-                await respond({
-                    text: `<@${body.user.id}> approved return`,
-                    replace_original: true
-                });
-
-                const userRewards = await userService.findUserRewards({ id: body.user.id });
-
-                if (!userRewards.length) {
-                    await say('You haven\'t got any rewards yet');
-
-                    return;
-                }
-
-                await say({
-                    blocks: selectReturnReward(userRewards)
-                });
-
-                break;
-
-            case constants.NO:
-                await respond({
-                    text: `<@${body.user.id}> reject return`,
-                    replace_original: true
+                    text: `Your request was not approved. Please, contact with <@${body.user.id}> for more details.`,
                 });
 
                 break;
@@ -289,7 +252,7 @@ module.exports = {
 
                 await respond({
                     blocks: block,
-                    attachments: [{ text: `<@${body.user.id}> approved return` }],
+                    attachments: [{ text: `<@${body.user.id}> approved return.` }],
                     replace_original: true
                 });
 
@@ -300,7 +263,7 @@ module.exports = {
 
                 await client.chat.postMessage({
                     channel: `${id}`,
-                    text: `HR approved your return action: ${reward.value}\nCurrent balance: ${rocks}`,
+                    text: `HR approved your return a reward: ${reward.value}\nCurrent balance: ${rocks}`,
                 });
 
                 break;
@@ -308,17 +271,104 @@ module.exports = {
             case constants.NO:
                 await respond({
                     blocks: block,
-                    attachments: [{ text: `<@${body.user.id}> reject return` }],
+                    attachments: [{ text: `<@${body.user.id}> rejected return.` }],
                     replace_original: true
                 });
 
                 await client.chat.postMessage({
                     channel: `${id}`,
-                    text: `Your return was not approved. Please, contact with <@${body.user.id}> for more details`,
+                    text: `Your return was not approved. Please, contact with <@${body.user.id}> for more details.`,
                 });
 
                 break;
         }
     },
+
+    selectCommand: async ({
+        action, ack, body, client, say
+    }) => {
+        await ack();
+
+        switch (action.selected_option.value) {
+            case 'get_rewards': {
+                const selectAttachments = await selectMenu(constants.REWARD, 'select_store');
+
+                await say({
+                    text: 'Hey pick reward',
+                    attachments: selectAttachments
+                });
+                break;
+            }
+            case 'get_actions':
+                const selectAttachments = await selectMenu(constants.ACTION, 'select_action');
+
+                await say({
+                    text: 'Hey pick action',
+                    attachments: selectAttachments
+                });
+                break;
+
+            case 'balance':
+                const { rocks } = await userService.findUser({ id: body.user.id });
+
+                await say({
+                    text: `You have ${rocks} rocks`
+                });
+
+                break;
+
+            case 'return_reward':
+                const userRewards = await userService.findUserRewards({ id: body.user_id });
+
+                if (!userRewards.length) {
+                    await say('You haven\'t got any rewards yet!');
+
+                    return;
+                }
+
+                await say({
+                    text: 'Select what reward do you want to return.',
+                    attachments: selectReturnReward(userRewards)
+                });
+
+                break;
+
+            case 'add_reward': {
+                const adminsId = ADMINS.split(';');
+
+                if (!adminsId.includes(body.user.id)) {
+                    await say('Access deny!');
+
+                    return;
+                }
+                const viewStore = viewCreate(constants.REWARD, 'view_2');
+
+                await client.views.open({
+                    trigger_id: body.trigger_id,
+                    view: viewStore
+                });
+                break;
+            }
+            case 'add_action': {
+                const adminsId = ADMINS.split(';');
+
+                if (!adminsId.includes(body.user.id)) {
+                    await say('Access deny!');
+
+                    return;
+                }
+                const viewAction = viewCreate(constants.ACTION, 'view_1');
+
+                await client.views.open({
+                    trigger_id: body.trigger_id,
+                    view: viewAction
+                });
+                break;
+            }
+            case 'karma':
+                await say('This command has not yet been created');
+                break;
+        }
+    }
 
 };

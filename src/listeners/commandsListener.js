@@ -1,9 +1,9 @@
 const {
-    constants, messages
+    constants
 } = require('../constants');
 const { ADMINS } = require('../config/config');
 const {
-    approvedAttachment, overflowSection, viewCreate, selectMenu
+    overflowSection, viewCreate, selectMenu, selectReturnReward
 } = require('../helper');
 const { userService } = require('../service');
 
@@ -17,7 +17,7 @@ module.exports = {
             const adminsId = ADMINS.split(';');
 
             if (!adminsId.includes(body.user_id)) {
-                await say('Access deny');
+                await say('Access deny!');
 
                 return;
             }
@@ -41,7 +41,7 @@ module.exports = {
             const adminsId = ADMINS.split(';');
 
             if (!adminsId.includes(body.user_id)) {
-                await say('Access deny');
+                await say('Access deny!');
 
                 return;
             }
@@ -63,7 +63,7 @@ module.exports = {
             const selectAttachments = await selectMenu(constants.ACTION, 'select_action');
 
             await say({
-                text: 'Hey pick action',
+                text: 'Hey pick action!',
                 attachments: selectAttachments
             });
         } catch (e) {
@@ -78,7 +78,7 @@ module.exports = {
             const selectAttachments = await selectMenu(constants.REWARD, 'select_store');
 
             await say({
-                text: 'Hey pick reward',
+                text: 'Hey pick reward!',
                 attachments: selectAttachments
             });
         } catch (e) {
@@ -98,28 +98,37 @@ module.exports = {
         }
     },
 
-    userBalance: async ({ ack, body, client }) => {
+    userBalance: async ({ ack, body, say }) => {
         try {
             await ack();
 
             const { rocks } = await userService.findUser({ id: body.user_id });
 
-            await client.chat.postMessage({
-                channel: body.user_id,
-                text: `You have ${rocks} rocks`
+            await say({
+                text: `You have ${rocks} rocks.`
             });
         } catch (e) {
             console.error(e);
         }
     },
 
-    returnReward: async ({ ack, body, client }) => {
+    returnReward: async ({
+        ack, body, say
+    }) => {
         try {
             await ack();
 
-            await client.chat.postMessage({
-                channel: body.user_id,
-                attachments: approvedAttachment(constants.RETURN_REWARD, messages.RETURN_REWARD)
+            const userRewards = await userService.findUserRewards({ id: body.user_id });
+
+            if (!userRewards.length) {
+                await say('You haven\'t got any rewards yet!');
+
+                return;
+            }
+
+            await say({
+                text: 'Select what reward do you want to return.',
+                attachments: selectReturnReward(userRewards)
             });
         } catch (e) {
             console.error(e);

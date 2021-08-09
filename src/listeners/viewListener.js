@@ -44,7 +44,7 @@ module.exports = {
 
         await client.chat.postMessage({
             channel: body.user.id,
-            text: 'Action create'
+            text: 'Action was created'
         });
     },
 
@@ -88,7 +88,7 @@ module.exports = {
 
         await client.chat.postMessage({
             channel: body.user.id,
-            text: 'Reward create'
+            text: 'Reward was created'
         });
     }
 };

@@ -1,67 +1,75 @@
 module.exports = [{
-    type: 'section',
-    text: {
-        type: 'mrkdwn',
-        text: 'This is a list of all commands'
-    },
-    accessory: {
+    type: 'input',
+    element: {
         type: 'static_select',
         placeholder: {
             type: 'plain_text',
-            text: 'Command',
+            text: 'Select a command',
             emoji: true
         },
         options: [
             {
                 text: {
                     type: 'plain_text',
-                    text: '/get_actions'
+                    text: 'create new action',
+                    emoji: true
                 },
-                value: '/get_actions'
+                value: 'add_action'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/add_action'
+                    text: 'create new reward',
+                    emoji: true
                 },
-                value: '/add_action'
+                value: 'add_reward'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/add_reward'
+                    text: 'list of all actions',
+                    emoji: true
                 },
-                value: '/add_reward'
+                value: 'get_actions'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/get_rewards'
+                    text: 'list of all rewards',
+                    emoji: true
                 },
-                value: '/get_rewards'
+                value: 'get_rewards'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/balance'
+                    text: 'balance',
+                    emoji: true
                 },
-                value: '/balance'
+                value: 'balance'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/karma'
+                    text: 'karma',
+                    emoji: true
                 },
-                value: '/karma'
+                value: 'karma'
             },
             {
                 text: {
                     type: 'plain_text',
-                    text: '/return_reward'
+                    text: 'return a reward',
+                    emoji: true
                 },
-                value: '/return_reward'
+                value: 'return_reward'
             }
         ],
         action_id: 'static_select-command'
+    },
+    label: {
+        type: 'plain_text',
+        text: 'This is a list of all commands.',
+        emoji: true
     }
 }];

@@ -1,4 +1,4 @@
-const { attachments_helper, homeView } = require('../helper');
+const { attachments_helper } = require('../helper');
 
 module.exports = {
     appMention: async ({ event, say }) => {
@@ -10,16 +10,6 @@ module.exports = {
         } catch (e) {
             console.log(e);
         }
-    },
-
-    appHomeOpened: async ({ event, client }) => {
-        try {
-            await client.views.publish({
-                user_id: event.user,
-                view: homeView
-            });
-        } catch (e) {
-            console.error(e);
-        }
     }
+
 };

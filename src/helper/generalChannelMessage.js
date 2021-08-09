@@ -13,7 +13,7 @@ module.exports = (id, chosenAction, rocks) => [
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `<@${id}>has received *${chosenAction.rocks}* rocks.`
+            text: `<@${id}> has received *${chosenAction.rocks}* rocks.`
         }
     },
     {

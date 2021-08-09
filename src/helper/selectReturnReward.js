@@ -1,29 +1,22 @@
 const createOptions = (options) => options.map((item) => ({
-    text: {
-        type: 'plain_text',
-        text: `${item.value}`,
-        emoji: true
-    },
-    value: `${item.value}`
+    type: 'plain_text',
+    text: `${item.value}`,
+    value: `${item.value}`,
+    emoji: true
 }));
 
 module.exports = (rewards) => {
     const rewardOptions = createOptions(rewards);
     return [{
-        type: 'section',
-        text: {
-            type: 'mrkdwn',
-            text: 'Pick what reward do you want to return'
-        },
-        accessory: {
-            type: 'static_select',
-            placeholder: {
-                type: 'plain_text',
-                text: 'Select a reward',
-                emoji: true
-            },
-            options: rewardOptions,
-            action_id: 'static_select-reward'
-        }
+        fallback: 'If you could read this message, you’d be choosing something fun to do right now',
+        color: '#3AA3E3',
+        callback_id: 'static_select-reward',
+        attachment_type: 'default',
+        actions: [{
+            name: 'list',
+            text: 'Select item',
+            type: 'select',
+            options: rewardOptions
+        }]
     }];
 };
