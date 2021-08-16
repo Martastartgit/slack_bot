@@ -12,7 +12,9 @@ const {
     generalChannelMessage,
     karmaGeneralMessage,
     selectReturnReward,
-    viewCreate
+    viewCreate,
+    checkUserInKarmaDB,
+    karmaModalView
 } = require('../helper');
 const {
     checkUserRocks
@@ -372,7 +374,22 @@ module.exports = {
                 break;
             }
             case 'karma':
-                await say('This command has not yet been created');
+                const { _id } = await userService.findUser({ id: body.user.id });
+
+                // const karmaUser = await checkUserInKarmaDB(body.user_id);
+
+                const karmaUser = await checkUserInKarmaDB(_id);
+
+                if (karmaUser.rocks === 0) {
+                    await say('Sorry, you spent all your karma rocks!');
+
+                    return;
+                }
+
+                await client.views.open({
+                    trigger_id: body.trigger_id,
+                    view: karmaModalView(karmaUser.rocks)
+                });
                 break;
         }
     },
@@ -410,6 +427,11 @@ module.exports = {
                 });
 
                 const user = await userService.updateOne({ id: karmaUserId }, { $inc: { rocks: +actionValue } });
+
+                await client.chat.postMessage({
+                    channel: `${userId}`,
+                    text: 'Your karma program was approved by HR!'
+                });
 
                 await client.chat.postMessage({
                     channel: `${CHANNEL_GENERAL_ID}`,

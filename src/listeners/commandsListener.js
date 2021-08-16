@@ -149,7 +149,7 @@ module.exports = {
 
             const karmaUser = await checkUserInKarmaDB(_id);
 
-            if (karmaUser && karmaUser.rocks === 0) {
+            if (karmaUser.rocks === 0) {
                 await say('Sorry, you spent all your karma rocks!');
 
                 return;
@@ -157,7 +157,7 @@ module.exports = {
 
             await client.views.open({
                 trigger_id: body.trigger_id,
-                view: karmaModalView
+                view: karmaModalView(karmaUser.rocks)
             });
         } catch (e) {
             console.error(e);

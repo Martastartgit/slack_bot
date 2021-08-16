@@ -6,9 +6,9 @@ module.exports = async (id) => {
     // const userWithKarma = await karmaService.findUserKarma({ id });
 
     if (!userWithKarma) {
-        await karmaService.createKarma({ userId: id });
+        const user = await karmaService.createKarma({ userId: id });
 
-        return;
+        return user;
     }
 
     return userWithKarma;
