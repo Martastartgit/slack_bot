@@ -15,7 +15,7 @@ const createOptions = async (text) => {
 
     return options.map((item) => ({
         type: 'plain_text',
-        text: `${item.value} - rocks:${item.rocks}`,
+        text: `${item.value}-${item.rocks} rocks`,
         value: `${item.value}`
     }));
 };

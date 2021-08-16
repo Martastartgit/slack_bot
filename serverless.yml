@@ -25,6 +25,10 @@ functions:
       - http:
           path: slack/events
           method: post
+  cronHandler:
+    handler: src/api.cronJob
+    events:
+      - schedule: cron(0 0 1 1/6 ? *)
 useDotenv: true
 plugins:
   - serverless-offline

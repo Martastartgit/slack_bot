@@ -3,7 +3,9 @@ const {
 } = require('../constants');
 const { ADMINS } = require('../config/config');
 const {
-    overflowSection, viewCreate, selectMenu, selectReturnReward
+    overflowSection, viewCreate, selectMenu, selectReturnReward,
+    checkUserInKarmaDB,
+    karmaModalView
 } = require('../helper');
 const { userService } = require('../service');
 
@@ -129,6 +131,33 @@ module.exports = {
             await say({
                 text: 'Select what reward do you want to return.',
                 attachments: selectReturnReward(userRewards)
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    karma: async ({
+        ack, body, say, client
+    }) => {
+        try {
+            await ack();
+
+            const { _id } = await userService.findUser({ id: body.user_id });
+
+            // const karmaUser = await checkUserInKarmaDB(body.user_id);
+
+            const karmaUser = await checkUserInKarmaDB(_id);
+
+            if (karmaUser && karmaUser.rocks === 0) {
+                await say('Sorry, you spent all your karma rocks!');
+
+                return;
+            }
+
+            await client.views.open({
+                trigger_id: body.trigger_id,
+                view: karmaModalView
             });
         } catch (e) {
             console.error(e);

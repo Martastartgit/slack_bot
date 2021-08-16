@@ -4,6 +4,7 @@ module.exports = {
 
     REWARD: 'Reward',
     ACTION: 'Action',
+    KARMA: 'Karma',
 
     APPROVED_HR_ACTION: 'Hr_action',
     APPROVED_HR_Return: 'Hr_return',

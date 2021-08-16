@@ -1,5 +1,6 @@
 module.exports = {
     REWARD: 'Reward',
     USER: 'User',
-    ACTION: 'Action'
+    ACTION: 'Action',
+    KARMA: 'Karma'
 };

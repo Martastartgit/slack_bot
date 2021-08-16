@@ -1,5 +1,7 @@
 module.exports = {
     Action: require('./action.schema'),
-    User: require('./user.schema'),
-    Reward: require('./reward.shema')
+    Karma: require('./karma.shema'),
+    Reward: require('./reward.shema'),
+    User: require('./user.schema')
+
 };

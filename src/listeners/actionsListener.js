@@ -1,5 +1,5 @@
 const {
-    constants, messages
+    constants
 } = require('../constants');
 const { ADMINS, CHANNEL_GENERAL_ID, HR2 } = require('../config/config');
 const {
@@ -10,11 +10,17 @@ const {
     filteredStore,
     getValueFromApprovedHrBlock,
     generalChannelMessage,
+    karmaGeneralMessage,
     selectReturnReward,
     viewCreate
 } = require('../helper');
-const { checkUserRocks } = require('../middleware');
-const { actionService, userService, rewardService } = require('../service');
+const {
+    checkUserRocks
+} = require('../middleware');
+const {
+    actionService, userService, rewardService,
+    karmaService
+} = require('../service');
 
 module.exports = {
     appMentionAction: async ({ action, ack, say }) => {
@@ -51,7 +57,7 @@ module.exports = {
 
         await respond({
             text: `${selectValue}. You'll get ${rocks} rocks.`,
-            attachments: approvedAttachment(constants.ACTION, messages.APPROVED)
+            attachments: approvedAttachment(constants.ACTION)
         });
     },
 
@@ -64,7 +70,7 @@ module.exports = {
 
         await respond({
             text: `${selectValue}. It costs ${rocks} rocks.`,
-            attachments: approvedAttachment(constants.REWARD, messages.APPROVED)
+            attachments: approvedAttachment(constants.REWARD)
         });
     },
 
@@ -82,7 +88,7 @@ module.exports = {
         await client.chat.postMessage({
             channel: `${HR2}`,
             blocks: approvedHRreturn(body.user, reward, constants.REWARD),
-            attachments: approvedAttachment(constants.APPROVED_HR_Return, messages.APPROVED)
+            attachments: approvedAttachment(constants.APPROVED_HR_Return)
         });
     },
 
@@ -106,7 +112,7 @@ module.exports = {
                 await client.chat.postMessage({
                     channel: `${HR2}`,
                     blocks: approvedHRBlock(body.user, chosenAction, constants.ACTION),
-                    attachments: approvedAttachment(constants.APPROVED_HR_ACTION, messages.APPROVED)
+                    attachments: approvedAttachment(constants.APPROVED_HR_ACTION)
                 });
 
                 break;
@@ -367,6 +373,62 @@ module.exports = {
             }
             case 'karma':
                 await say('This command has not yet been created');
+                break;
+        }
+    },
+
+    approvedKarma: async ({
+        ack, action, body, client, respond
+    }) => {
+        await ack();
+
+        const block = body.original_message.blocks;
+
+        const [
+            userId,
+            karmaUserId
+        ] = body.original_message.text.split(',');
+
+        const [
+            userValue,
+            actionValue
+        ] = getValueFromApprovedHrBlock(block);
+
+        switch (action.value) {
+            case constants.YES:
+                await respond({
+                    blocks: block,
+                    attachments: [{ text: `<@${body.user.id}> approved karma.` }],
+                    replace_original: true
+                });
+
+                const { _id } = await userService.findUser({ id: userId });
+
+                await karmaService.updateKarmaUser({ userId: _id }, {
+                    $push: { karma: { userId: karmaUserId, rocks: actionValue } },
+                    $inc: { rocks: -actionValue }
+                });
+
+                const user = await userService.updateOne({ id: karmaUserId }, { $inc: { rocks: +actionValue } });
+
+                await client.chat.postMessage({
+                    channel: `${CHANNEL_GENERAL_ID}`,
+                    blocks: karmaGeneralMessage(user, actionValue, userId)
+                });
+
+                break;
+
+            case constants.NO:
+                await respond({
+                    blocks: block,
+                    attachments: [{ text: `<@${body.user.id}> rejected karma.` }],
+                    replace_original: true
+                });
+
+                await client.chat.postMessage({
+                    channel: `${userId}`,
+                    text: `Your request karma program was not approved. Please, contact with <@${body.user.id}> for more details.`
+                });
                 break;
         }
     }

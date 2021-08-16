@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const connectDB = require('./dataBase/connections');
 const { SLACK_SIGNING_SECRET, SLACK_BOT_TOKEN } = require('./config/config');
-const { getAllUsers } = require('./helper');
+const { getAllUsers, setKarmaRocks } = require('./helper');
 const {
     actionsListener, eventsListener, commandsListener, viewListener
 } = require('./listeners');
@@ -36,6 +36,8 @@ app.view('view_1', viewListener.modalViewAction);
 
 app.view('view_2', viewListener.modalViewReward);
 
+app.view('karma_modal', viewListener.modalViewKarma);
+
 app.command('/get_actions', commandsListener.getAllActions);
 
 app.command('/get_rewards', commandsListener.getAllRewards);
@@ -45,6 +47,8 @@ app.command('/menu', commandsListener.botMenu);
 app.command('/balance', commandsListener.userBalance);
 
 app.command('/return_reward', commandsListener.returnReward);
+
+app.command('/karma', commandsListener.karma);
 
 app.action({ callback_id: 'select_action', type: 'interactive_message' }, actionsListener.selectAction);
 
@@ -59,6 +63,8 @@ app.action({ callback_id: 'approvedHr_action', type: 'interactive_message' }, ac
 app.action({ callback_id: 'static_select-reward', type: 'interactive_message' }, actionsListener.selectRewardReturn);
 
 app.action({ callback_id: 'approvedHr_return', type: 'interactive_message' }, actionsListener.approvedReturnByHR);
+
+app.action({ callback_id: 'approvedKarma', type: 'interactive_message' }, actionsListener.approvedKarma);
 
 app.action('static_select-command', actionsListener.selectCommand);
 
@@ -77,3 +83,5 @@ module.exports.authorization = (event, context, callback) => {
     };
     callback(null, response);
 };
+
+module.exports.cronJob = async (event, context) => await setKarmaRocks();
