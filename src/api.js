@@ -50,10 +50,6 @@ app.command('/return_reward', commandsListener.returnReward);
 
 app.command('/karma', commandsListener.karma);
 
-app.action({ callback_id: 'select_action', type: 'interactive_message' }, actionsListener.selectAction);
-
-app.action({ callback_id: 'select_store', type: 'interactive_message' }, actionsListener.selectStore);
-
 app.action({ callback_id: 'approvedAction', type: 'interactive_message' }, actionsListener.approvedActionByUser);
 
 app.action({ callback_id: 'approvedReward', type: 'interactive_message' }, actionsListener.approvedRewardByUser);
@@ -67,6 +63,10 @@ app.action({ callback_id: 'approvedHr_return', type: 'interactive_message' }, ac
 app.action({ callback_id: 'approvedKarma', type: 'interactive_message' }, actionsListener.approvedKarma);
 
 app.action('static_select-command', actionsListener.selectCommand);
+
+app.action('select_action', actionsListener.selectAction);
+
+app.action('select_store', actionsListener.selectStore);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();

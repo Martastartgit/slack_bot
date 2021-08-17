@@ -1,7 +1,8 @@
 const {
+    approvedAttachment,
     getInputValue,
     karmaHRBlock,
-    approvedAttachment
+    checkUserInKarmaDB
 } = require('../helper');
 const { roxyValidation, textInputValidation } = require('../middleware');
 const {
@@ -125,6 +126,21 @@ module.exports = {
             return;
         }
 
+        const { _id } = await userService.findUser({ id: body.user.id });
+
+        const { rocks } = await karmaService.findUserKarma({ userId: _id });
+
+        if (rocks < rocksValue) {
+            await ack({
+                response_action: 'errors',
+                errors: {
+                    rocks_block: 'You don\'t have enough rocks!'
+                }
+            });
+
+            return;
+        }
+
         if (rocksValue > 20) {
             await ack({
                 response_action: 'errors',
@@ -146,20 +162,6 @@ module.exports = {
 
             return;
         }
-        const { _id } = await userService.findUser({ id: body.user.id });
-
-        const { rocks } = await karmaService.findUserKarma({ userId: _id });
-
-        if (rocks < rocksValue) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    rocks_block: 'You don\'t have enough rocks!'
-                }
-            });
-
-            return;
-        }
 
         await ack();
 
@@ -170,7 +172,7 @@ module.exports = {
 
         await client.chat.postMessage({
             channel: `${HR2}`,
-            text: `${body.user.id},${textValue}`,
+            text: `${body.user.id},${textValue},${rocksValue}`,
             blocks: karmaHRBlock(body.user.id, rocksValue, textValue),
             attachments: approvedAttachment(constants.KARMA)
         });

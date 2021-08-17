@@ -13,6 +13,7 @@ module.exports = {
     karmaHRBlock: require('./karmaHRBlock'),
     karmaModalView: require('./karmaModalView'),
     karmaGeneralMessage: require('./karmaGeneralMessage'),
+    karmaProgramHelper: require('./karmaProgramHelper'),
     overflowSection: require('./overflowSection'),
     selectMenu: require('./selectMenu'),
     selectReturnReward: require('./selectReturnReward'),

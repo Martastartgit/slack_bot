@@ -11,6 +11,7 @@ const {
     getValueFromApprovedHrBlock,
     generalChannelMessage,
     karmaGeneralMessage,
+    karmaProgramHelper,
     selectReturnReward,
     viewCreate,
     checkUserInKarmaDB,
@@ -20,8 +21,7 @@ const {
     checkUserRocks
 } = require('../middleware');
 const {
-    actionService, userService, rewardService,
-    karmaService
+    actionService, userService, rewardService
 } = require('../service');
 
 module.exports = {
@@ -53,7 +53,7 @@ module.exports = {
     selectAction: async ({ action, ack, respond }) => {
         await ack();
 
-        const selectValue = action.selected_options.map(({ value }) => value);
+        const selectValue = action.selected_option.value;
 
         const { rocks } = await actionService.findAction({ value: selectValue });
 
@@ -66,7 +66,7 @@ module.exports = {
     selectStore: async ({ action, ack, respond }) => {
         await ack();
 
-        const selectValue = action.selected_options.map(({ value }) => value);
+        const selectValue = action.selected_option.value;
 
         const { rocks } = await rewardService.findOneReward({ value: selectValue });
 
@@ -292,6 +292,7 @@ module.exports = {
         }
     },
 
+    // eslint-disable-next-line complexity
     selectCommand: async ({
         action, ack, body, client, say
     }) => {
@@ -302,8 +303,7 @@ module.exports = {
                 const selectAttachments = await selectMenu(constants.REWARD, 'select_store');
 
                 await say({
-                    text: 'Hey pick reward',
-                    attachments: selectAttachments
+                    blocks: selectAttachments
                 });
                 break;
             }
@@ -311,8 +311,7 @@ module.exports = {
                 const selectAttachments = await selectMenu(constants.ACTION, 'select_action');
 
                 await say({
-                    text: 'Hey pick action',
-                    attachments: selectAttachments
+                    blocks: selectAttachments
                 });
                 break;
 
@@ -326,7 +325,7 @@ module.exports = {
                 break;
 
             case 'return_reward':
-                const userRewards = await userService.findUserRewards({ id: body.user_id });
+                const userRewards = await userService.findUserRewards({ id: body.user.id });
 
                 if (!userRewards.length) {
                     await say('You haven\'t got any rewards yet!');
@@ -376,8 +375,6 @@ module.exports = {
             case 'karma':
                 const { _id } = await userService.findUser({ id: body.user.id });
 
-                // const karmaUser = await checkUserInKarmaDB(body.user_id);
-
                 const karmaUser = await checkUserInKarmaDB(_id);
 
                 if (karmaUser.rocks === 0) {
@@ -403,13 +400,9 @@ module.exports = {
 
         const [
             userId,
-            karmaUserId
+            karmaUserId,
+            rocksValue
         ] = body.original_message.text.split(',');
-
-        const [
-            userValue,
-            actionValue
-        ] = getValueFromApprovedHrBlock(block);
 
         switch (action.value) {
             case constants.YES:
@@ -419,14 +412,7 @@ module.exports = {
                     replace_original: true
                 });
 
-                const { _id } = await userService.findUser({ id: userId });
-
-                await karmaService.updateKarmaUser({ userId: _id }, {
-                    $push: { karma: { userId: karmaUserId, rocks: actionValue } },
-                    $inc: { rocks: -actionValue }
-                });
-
-                const user = await userService.updateOne({ id: karmaUserId }, { $inc: { rocks: +actionValue } });
+                const user = await karmaProgramHelper(userId, karmaUserId, rocksValue);
 
                 await client.chat.postMessage({
                     channel: `${userId}`,
@@ -435,7 +421,7 @@ module.exports = {
 
                 await client.chat.postMessage({
                     channel: `${CHANNEL_GENERAL_ID}`,
-                    blocks: karmaGeneralMessage(user, actionValue, userId)
+                    blocks: karmaGeneralMessage(user, rocksValue, userId)
                 });
 
                 break;

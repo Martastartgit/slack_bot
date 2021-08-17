@@ -14,8 +14,11 @@ const createOptions = async (text) => {
     }
 
     return options.map((item) => ({
-        type: 'plain_text',
-        text: `${item.value}-${item.rocks} rocks`,
+        text: {
+            type: 'plain_text',
+            text: `${item.value}-${item.rocks}rocks`,
+            emoji: true
+        },
         value: `${item.value}`
     }));
 };
@@ -24,15 +27,21 @@ module.exports = async (text, callback) => {
     const allOptions = await createOptions(text);
 
     return [{
-        fallback: 'If you could read this message, you’d be choosing something fun to do right now',
-        color: '#3AA3E3',
-        callback_id: `${callback}`,
-        attachment_type: 'default',
-        actions: [{
-            name: 'list',
-            text: 'Select item',
-            type: 'select',
-            options: allOptions
-        }]
+        type: 'input',
+        element: {
+            type: 'static_select',
+            placeholder: {
+                type: 'plain_text',
+                text: `Select a ${text}`,
+                emoji: true
+            },
+            options: allOptions,
+            action_id: `${callback}`
+        },
+        label: {
+            type: 'plain_text',
+            text: `This is a list of all ${text}s.`,
+            emoji: true
+        }
     }];
 };

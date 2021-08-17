@@ -65,8 +65,7 @@ module.exports = {
             const selectAttachments = await selectMenu(constants.ACTION, 'select_action');
 
             await say({
-                text: 'Hey pick action!',
-                attachments: selectAttachments
+                blocks: selectAttachments
             });
         } catch (e) {
             console.error(e);
@@ -80,8 +79,7 @@ module.exports = {
             const selectAttachments = await selectMenu(constants.REWARD, 'select_store');
 
             await say({
-                text: 'Hey pick reward!',
-                attachments: selectAttachments
+                blocks: selectAttachments
             });
         } catch (e) {
             console.error(e);
@@ -145,8 +143,6 @@ module.exports = {
 
             const { _id } = await userService.findUser({ id: body.user_id });
 
-            // const karmaUser = await checkUserInKarmaDB(body.user_id);
-
             const karmaUser = await checkUserInKarmaDB(_id);
 
             if (karmaUser.rocks === 0) {
@@ -162,6 +158,6 @@ module.exports = {
         } catch (e) {
             console.error(e);
         }
-    }
+    },
 
 };
