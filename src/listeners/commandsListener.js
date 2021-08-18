@@ -1,8 +1,16 @@
 const { constants } = require('../constants');
-const { ADMINS } = require('../config/config');
-const { checkUserInKarmaDB } = require('../helper');
 const {
-    karmaModalView, overflowSection, viewCreate, selectMenu, selectReturnReward
+    changeBalanceHelper,
+    checkAccess,
+    createActionHelper,
+    createRewardHelper,
+    getUserBalanceHelper,
+    karmaListenerHelper,
+    returnRewardHelper
+} = require('../helper');
+const {
+    overflowSection,
+    selectMenu,
 } = require('../layouts');
 const { userService } = require('../service');
 
@@ -13,19 +21,7 @@ module.exports = {
         try {
             await ack();
 
-            const adminsId = ADMINS.split(';');
-
-            if (!adminsId.includes(body.user_id)) {
-                await say('Access deny!');
-
-                return;
-            }
-            const viewAction = viewCreate(constants.ACTION, 'view_1');
-
-            await client.views.open({
-                trigger_id: body.trigger_id,
-                view: viewAction
-            });
+            await createActionHelper(body.user_id, say, body, client);
         } catch (e) {
             console.error(e);
         }
@@ -37,19 +33,7 @@ module.exports = {
         try {
             await ack();
 
-            const adminsId = ADMINS.split(';');
-
-            if (!adminsId.includes(body.user_id)) {
-                await say('Access deny!');
-
-                return;
-            }
-            const viewStore = viewCreate(constants.REWARD, 'view_2');
-
-            await client.views.open({
-                trigger_id: body.trigger_id,
-                view: viewStore
-            });
+            await createRewardHelper(body.user_id, body, client, say);
         } catch (e) {
             console.error(e);
         }
@@ -115,18 +99,7 @@ module.exports = {
         try {
             await ack();
 
-            const userRewards = await userService.findUserRewards({ id: body.user_id });
-
-            if (!userRewards.length) {
-                await say('You haven\'t got any rewards yet!');
-
-                return;
-            }
-
-            await say({
-                text: 'Select what reward do you want to return.',
-                attachments: selectReturnReward(userRewards)
-            });
+            await returnRewardHelper(body.user_id, say);
         } catch (e) {
             console.error(e);
         }
@@ -138,19 +111,54 @@ module.exports = {
         try {
             await ack();
 
-            const { _id } = await userService.findUser({ id: body.user_id });
+            await karmaListenerHelper(body.user_id, say, client, body);
+        } catch (e) {
+            console.error(e);
+        }
+    },
 
-            const karmaUser = await checkUserInKarmaDB(_id);
+    changedUsersBalance: async ({
+        ack, body, say, client
+    }) => {
+        try {
+            await ack();
 
-            if (karmaUser.rocks === 0) {
-                await say('Sorry, you spent all your karma rocks!');
+            await changeBalanceHelper(body.user_id, body, client, say);
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    getUserBalance: async ({
+        ack, body, say
+    }) => {
+        try {
+            await ack();
+
+            await getUserBalanceHelper(body.user_id, say);
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    editAction: async ({
+        ack, body, say
+    }) => {
+        try {
+            await ack();
+
+            const ifAccessDeny = checkAccess(body.user_id);
+
+            if (ifAccessDeny) {
+                await say('Access deny!');
 
                 return;
             }
 
-            await client.views.open({
-                trigger_id: body.trigger_id,
-                view: karmaModalView(karmaUser.rocks)
+            const selectAttachments = await selectMenu(constants.ACTION, 'edit_action');
+
+            await say({
+                blocks: selectAttachments
             });
         } catch (e) {
             console.error(e);

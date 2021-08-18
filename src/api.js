@@ -28,15 +28,19 @@ app.event('app_mention', eventsListener.appMention);
 
 app.action({ callback_id: 'actions_bot', type: 'interactive_message' }, actionsListener.appMentionAction);
 
-app.command('/add_action', commandsListener.addAction);
-
-app.command('/add_reward', commandsListener.addReward);
-
 app.view('view_1', viewListener.modalViewAction);
 
 app.view('view_2', viewListener.modalViewReward);
 
 app.view('karma_modal', viewListener.modalViewKarma);
+
+app.view('changeBalance_modal', viewListener.changeBalanceModal);
+
+app.view('edit_action', viewListener.editActionView);
+
+app.command('/add_action', commandsListener.addAction);
+
+app.command('/add_reward', commandsListener.addReward);
 
 app.command('/get_actions', commandsListener.getAllActions);
 
@@ -49,6 +53,12 @@ app.command('/balance', commandsListener.userBalance);
 app.command('/return_reward', commandsListener.returnReward);
 
 app.command('/karma', commandsListener.karma);
+
+app.command('/users_balance', commandsListener.getUserBalance);
+
+app.command('/change_balance', commandsListener.changedUsersBalance);
+
+app.command('/edit_action', commandsListener.editAction);
 
 app.action({ callback_id: 'approvedAction', type: 'interactive_message' }, actionsListener.approvedActionByUser);
 
@@ -67,6 +77,10 @@ app.action('select_action', actionsListener.selectAction);
 app.action('select_store', actionsListener.selectStore);
 
 app.action('static_select-command', actionsListener.selectCommand);
+
+app.action('get_balance', actionsListener.getUserBalance);
+
+app.action('edit_action', actionsListener.editAction);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();

@@ -1,13 +1,13 @@
-module.exports = (rocks) => ({
+module.exports = ({
     title: {
         type: 'plain_text',
-        text: 'Karma Modal'
+        text: 'Change Balance'
     },
     submit: {
         type: 'plain_text',
         text: 'Submit'
     },
-    callback_id: 'karma_modal',
+    callback_id: 'changeBalance_modal',
     blocks: [
         {
             type: 'input',
@@ -38,18 +38,17 @@ module.exports = (rocks) => ({
                 type: 'plain_text_input',
                 placeholder: {
                     type: 'plain_text',
-                    text: 'You can give only from 1 to 20 rocks!',
+                    text: 'Rocks',
                     emoji: true
                 },
-                action_id: 'karma_input-rocks'
+                action_id: 'change_input-rocks'
             },
             label: {
                 type: 'plain_text',
-                text: `You have ${rocks} rocks for karma.How much rocks do you want to give?`,
+                text: 'Set new value',
                 emoji: true
             }
         }
     ],
     type: 'modal'
 });
-

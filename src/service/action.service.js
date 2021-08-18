@@ -7,4 +7,6 @@ module.exports = {
 
     findAction: (filterObject) => Action.findOne(filterObject),
 
+    updateAction: (filterObject, updateObject) => Action.findOneAndUpdate(filterObject, updateObject, { new: true }),
+
 };

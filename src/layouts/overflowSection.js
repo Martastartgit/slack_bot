@@ -55,7 +55,7 @@ module.exports = [{
                     text: 'karma',
                     emoji: true
                 },
-                value: 'karma'
+                value: 'Karma'
             },
             {
                 text: {
@@ -63,7 +63,31 @@ module.exports = [{
                     text: 'return a reward',
                     emoji: true
                 },
-                value: 'return_reward'
+                value: 'Return_reward'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'change balance',
+                    emoji: true
+                },
+                value: 'change_balance'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'get user\'s balance',
+                    emoji: true
+                },
+                value: 'user_balance'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'edit action',
+                    emoji: true
+                },
+                value: 'edit_action'
             }
         ],
         action_id: 'static_select-command'

@@ -180,4 +180,89 @@ module.exports = {
         });
     },
 
+    changeBalanceModal: async ({
+        ack, body, view, client
+    }) => {
+        const [
+            userInput,
+            roxyInput
+        ] = Object.values(view.state.values);
+
+        const { textValue, rocksValue } = getInputValue(userInput, roxyInput, constants.KARMA);
+
+        const ifRoxyNotValid = roxyValidation(Number(rocksValue));
+
+        if (ifRoxyNotValid) {
+            await ack({
+                response_action: 'errors',
+                errors: {
+                    rocks_block: 'Not valid input'
+                }
+            });
+
+            return;
+        }
+
+        await ack();
+
+        await userService.updateOne({ id: textValue }, { $set: { rocks: rocksValue } });
+
+        await client.chat.postMessage({
+            channel: body.user.id,
+            text: `You changed <@${textValue}> rocks to ${rocksValue}`
+        });
+
+        await client.chat.postMessage({
+            channel: `${textValue}`,
+            text: `<@${body.user.id}> changed your balance\n current balance: ${rocksValue} rocks`,
+        });
+    },
+
+    editActionView: async ({
+        ack, body, view, client
+    }) => {
+        const [
+            actionInput,
+            roxyInput
+        ] = Object.values(view.state.values);
+
+        const actionId = body.original_message.text;
+
+        const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
+
+        const ifRoxyNotValid = roxyValidation(Number(rocksValue));
+        const ifTextValid = textInputValidation(textValue);
+
+        if (ifRoxyNotValid) {
+            await ack({
+                response_action: 'errors',
+                errors: {
+                    roxy_block: 'Not valid input'
+                }
+            });
+
+            return;
+        }
+
+        if (!ifTextValid) {
+            await ack({
+                response_action: 'errors',
+                errors: {
+                    action_block: 'Not valid input'
+                }
+            });
+
+            return;
+        }
+
+        await ack();
+
+        await actionService.updateAction({ _id: actionId }, { $set: { rocks: rocksValue, value: textValue } });
+
+        await client.chat.postMessage({
+            channel: body.user.id,
+            text: `This action: ${textValue} was edited`
+        });
+    }
+
 };

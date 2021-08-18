@@ -1,26 +1,28 @@
 const { constants } = require('../constants');
 const {
-    ADMINS,
     CHANNEL_GENERAL_ID,
     HR2
 } = require('../config/config');
 const {
+    changeBalanceHelper,
     checkUserRocks,
+    createActionHelper,
+    createRewardHelper,
     filteredStore,
+    getUserBalanceHelper,
     getValueFromApprovedHrBlock,
+    karmaListenerHelper,
     karmaProgramHelper,
-    checkUserInKarmaDB,
+    returnRewardHelper
 } = require('../helper');
 const {
     approvedAttachment,
     approvedHRBlock,
     approvedHRreturn,
     generalChannelMessage,
-    karmaModalView,
+    editActionModal,
     karmaGeneralMessage,
     selectMenu,
-    selectReturnReward,
-    viewCreate
 } = require('../layouts');
 const {
     actionService,
@@ -296,14 +298,13 @@ module.exports = {
         }
     },
 
-    // eslint-disable-next-line complexity
     selectCommand: async ({
         action, ack, body, client, say
     }) => {
         await ack();
 
         switch (action.selected_option.value) {
-            case 'get_rewards': {
+            case constants.GET_REWARDS: {
                 const selectAttachments = await selectMenu(constants.REWARD, 'select_store');
 
                 await say({
@@ -311,7 +312,7 @@ module.exports = {
                 });
                 break;
             }
-            case 'get_actions':
+            case constants.GET_ACTIONS:
                 const selectAttachments = await selectMenu(constants.ACTION, 'select_action');
 
                 await say({
@@ -319,7 +320,7 @@ module.exports = {
                 });
                 break;
 
-            case 'balance':
+            case constants.BALANCE:
                 const { rocks } = await userService.findUser({ id: body.user.id });
 
                 await say({
@@ -328,69 +329,37 @@ module.exports = {
 
                 break;
 
-            case 'return_reward':
-                const userRewards = await userService.findUserRewards({ id: body.user.id });
-
-                if (!userRewards.length) {
-                    await say('You haven\'t got any rewards yet!');
-
-                    return;
-                }
-
-                await say({
-                    text: 'Select what reward do you want to return.',
-                    attachments: selectReturnReward(userRewards)
-                });
+            case constants.RETURN_REWARD:
+                await returnRewardHelper(body.user.id, say);
 
                 break;
 
-            case 'add_reward': {
-                const adminsId = ADMINS.split(';');
+            case constants.ADD_REWARD: {
+                await createRewardHelper(body.user.id, body, client, say);
 
-                if (!adminsId.includes(body.user.id)) {
-                    await say('Access deny!');
-
-                    return;
-                }
-                const viewStore = viewCreate(constants.REWARD, 'view_2');
-
-                await client.views.open({
-                    trigger_id: body.trigger_id,
-                    view: viewStore
-                });
                 break;
             }
-            case 'add_action': {
-                const adminsId = ADMINS.split(';');
+            case constants.ADD_ACTION: {
+                await createActionHelper(body.user.id, say, body, client);
 
-                if (!adminsId.includes(body.user.id)) {
-                    await say('Access deny!');
-
-                    return;
-                }
-                const viewAction = viewCreate(constants.ACTION, 'view_1');
-
-                await client.views.open({
-                    trigger_id: body.trigger_id,
-                    view: viewAction
-                });
                 break;
             }
-            case 'karma':
-                const { _id } = await userService.findUser({ id: body.user.id });
+            case constants.KARMA:
+                await karmaListenerHelper(body.user.id, say, client, body);
 
-                const karmaUser = await checkUserInKarmaDB(_id);
+                break;
+            case constants.CHANGE_BALANCE:
+                await changeBalanceHelper(body.user.id, body, client, say);
 
-                if (karmaUser.rocks === 0) {
-                    await say('Sorry, you spent all your karma rocks!');
+                break;
+            case constants.USER_BALANCE:
+                await getUserBalanceHelper(body.user.id, say);
 
-                    return;
-                }
+                break;
 
-                await client.views.open({
-                    trigger_id: body.trigger_id,
-                    view: karmaModalView(karmaUser.rocks)
-                });
+            case constants.EDIT_ACTION:
+                await say('dffdg');
+
                 break;
         }
     },
@@ -443,6 +412,36 @@ module.exports = {
                 });
                 break;
         }
-    }
+    },
+
+    getUserBalance: async ({
+        ack, action, respond
+    }) => {
+        await ack();
+
+        const id = action.selected_conversation;
+
+        const { rocks } = await userService.findUser({ id });
+
+        await respond({
+            text: `User has ${rocks} rocks`,
+            replace_original: true
+        });
+    },
+
+    editAction: async ({
+        ack, action, client, body
+    }) => {
+        await ack();
+
+        const selectValue = action.selected_option.value;
+
+        const chosenAction = await actionService.findAction({ value: selectValue });
+
+        await client.views.open({
+            trigger_id: body.trigger_id,
+            view: editActionModal(constants.ACTION, constants.EDIT_ACTION, chosenAction)
+        });
+    },
 
 };
