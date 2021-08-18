@@ -1,27 +1,31 @@
+const { constants } = require('../constants');
 const {
-    constants
-} = require('../constants');
-const { ADMINS, CHANNEL_GENERAL_ID, HR2 } = require('../config/config');
+    ADMINS,
+    CHANNEL_GENERAL_ID,
+    HR2
+} = require('../config/config');
+const {
+    checkUserRocks,
+    filteredStore,
+    getValueFromApprovedHrBlock,
+    karmaProgramHelper,
+    checkUserInKarmaDB,
+} = require('../helper');
 const {
     approvedAttachment,
     approvedHRBlock,
     approvedHRreturn,
-    selectMenu,
-    filteredStore,
-    getValueFromApprovedHrBlock,
     generalChannelMessage,
+    karmaModalView,
     karmaGeneralMessage,
-    karmaProgramHelper,
+    selectMenu,
     selectReturnReward,
-    viewCreate,
-    checkUserInKarmaDB,
-    karmaModalView
-} = require('../helper');
+    viewCreate
+} = require('../layouts');
 const {
-    checkUserRocks
-} = require('../middleware');
-const {
-    actionService, userService, rewardService
+    actionService,
+    userService,
+    rewardService
 } = require('../service');
 
 module.exports = {

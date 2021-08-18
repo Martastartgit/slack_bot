@@ -62,11 +62,11 @@ app.action({ callback_id: 'approvedHr_return', type: 'interactive_message' }, ac
 
 app.action({ callback_id: 'approvedKarma', type: 'interactive_message' }, actionsListener.approvedKarma);
 
-app.action('static_select-command', actionsListener.selectCommand);
-
 app.action('select_action', actionsListener.selectAction);
 
 app.action('select_store', actionsListener.selectStore);
+
+app.action('static_select-command', actionsListener.selectCommand);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();

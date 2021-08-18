@@ -7,7 +7,7 @@ const UserScheme = new Schema({
     name: String,
     rocks: {
         type: Number,
-        default: 10
+        default: 0
     },
     actions: [{
         type: Schema.Types.ObjectId, ref: ACTION

@@ -1,5 +1,6 @@
 module.exports = [{
     type: 'input',
+    dispatch_action: true,
     element: {
         type: 'static_select',
         placeholder: {

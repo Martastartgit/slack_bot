@@ -1,10 +1,12 @@
+const { getInputValue } = require('../helper');
 const {
     approvedAttachment,
-    getInputValue,
-    karmaHRBlock,
-    checkUserInKarmaDB
-} = require('../helper');
-const { roxyValidation, textInputValidation } = require('../middleware');
+    karmaHRBlock
+} = require('../layouts');
+const {
+    roxyValidation,
+    textInputValidation
+} = require('../validators');
 const {
     actionService, rewardService,
     userService,

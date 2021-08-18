@@ -16,7 +16,7 @@ const createOptions = async (text) => {
     return options.map((item) => ({
         text: {
             type: 'plain_text',
-            text: `${item.value}-${item.rocks}rocks`,
+            text: `${item.value} - ${item.rocks} rocks`,
             emoji: true
         },
         value: `${item.value}`
@@ -28,6 +28,7 @@ module.exports = async (text, callback) => {
 
     return [{
         type: 'input',
+        dispatch_action: true,
         element: {
             type: 'static_select',
             placeholder: {

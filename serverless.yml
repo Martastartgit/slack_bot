@@ -28,7 +28,7 @@ functions:
   cronHandler:
     handler: src/api.cronJob
     events:
-      - schedule: cron(0 0 1 1/6 ? *)
+      - schedule: cron(0 0 1 1/1 ? *)
 useDotenv: true
 plugins:
   - serverless-offline

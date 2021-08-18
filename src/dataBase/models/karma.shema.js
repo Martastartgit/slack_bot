@@ -17,6 +17,8 @@ const KarmaScheme = new Schema({
     },
     karma: [KarmaSubModel]
 
+}, {
+    timestamps: true
 });
 
 module.exports = model(KARMA, KarmaScheme);

@@ -1,4 +1,4 @@
-const { attachments_helper } = require('../helper');
+const { attachments_helper } = require('../layouts');
 
 module.exports = {
     appMention: async ({ event, say }) => {

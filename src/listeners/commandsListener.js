@@ -1,12 +1,9 @@
-const {
-    constants
-} = require('../constants');
+const { constants } = require('../constants');
 const { ADMINS } = require('../config/config');
+const { checkUserInKarmaDB } = require('../helper');
 const {
-    overflowSection, viewCreate, selectMenu, selectReturnReward,
-    checkUserInKarmaDB,
-    karmaModalView
-} = require('../helper');
+    karmaModalView, overflowSection, viewCreate, selectMenu, selectReturnReward
+} = require('../layouts');
 const { userService } = require('../service');
 
 module.exports = {
