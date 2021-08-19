@@ -12,7 +12,7 @@ module.exports = [{
             {
                 text: {
                     type: 'plain_text',
-                    text: 'create new action',
+                    text: 'create new action (only for admin)',
                     emoji: true
                 },
                 value: 'add_action'
@@ -20,10 +20,34 @@ module.exports = [{
             {
                 text: {
                     type: 'plain_text',
-                    text: 'create new reward',
+                    text: 'create new reward (only for admin)',
                     emoji: true
                 },
                 value: 'add_reward'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'change balance (only for admin)',
+                    emoji: true
+                },
+                value: 'change_balance'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'get user\'s balance (only for admin)',
+                    emoji: true
+                },
+                value: 'user_balance'
+            },
+            {
+                text: {
+                    type: 'plain_text',
+                    text: 'edit action (only for admin)',
+                    emoji: true
+                },
+                value: 'edit_action'
             },
             {
                 text: {
@@ -64,30 +88,6 @@ module.exports = [{
                     emoji: true
                 },
                 value: 'Return_reward'
-            },
-            {
-                text: {
-                    type: 'plain_text',
-                    text: 'change balance',
-                    emoji: true
-                },
-                value: 'change_balance'
-            },
-            {
-                text: {
-                    type: 'plain_text',
-                    text: 'get user\'s balance',
-                    emoji: true
-                },
-                value: 'user_balance'
-            },
-            {
-                text: {
-                    type: 'plain_text',
-                    text: 'edit action',
-                    emoji: true
-                },
-                value: 'edit_action'
             }
         ],
         action_id: 'static_select-command'

@@ -1,9 +1,9 @@
 const { constants } = require('../constants');
 const {
     changeBalanceHelper,
-    checkAccess,
     createActionHelper,
     createRewardHelper,
+    editActionHelper,
     getUserBalanceHelper,
     karmaListenerHelper,
     returnRewardHelper
@@ -147,19 +147,7 @@ module.exports = {
         try {
             await ack();
 
-            const ifAccessDeny = checkAccess(body.user_id);
-
-            if (ifAccessDeny) {
-                await say('Access deny!');
-
-                return;
-            }
-
-            const selectAttachments = await selectMenu(constants.ACTION, 'edit_action');
-
-            await say({
-                blocks: selectAttachments
-            });
+            await editActionHelper(body.user_id, say);
         } catch (e) {
             console.error(e);
         }

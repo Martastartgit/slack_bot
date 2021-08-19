@@ -5,6 +5,7 @@ module.exports = {
     checkUserRocks: require('./checkRocks'),
     createActionHelper: require('./createActionHelper'),
     createRewardHelper: require('./createRewardHelper'),
+    editActionHelper: require('./editActionHelper'),
     getAllUsers: require('./getAllUsers'),
     getUserBalanceHelper: require('./getUserBalanceHelper'),
     getValueFromApprovedHrBlock: require('./getBlocksValue'),
@@ -13,6 +14,7 @@ module.exports = {
     karmaListenerHelper: require('./karmaListenerHelper'),
     karmaProgramHelper: require('./karmaProgramHelper'),
     returnRewardHelper: require('./returnRewardHelper'),
-    setKarmaRocks: require('./setKarmaRocks')
+    setKarmaRocks: require('./setKarmaRocks'),
+    validationHelper: require('./validationHelper')
 
 };

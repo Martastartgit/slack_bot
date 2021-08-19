@@ -226,7 +226,7 @@ module.exports = {
             roxyInput
         ] = Object.values(view.state.values);
 
-        const actionId = body.original_message.text;
+        const actionId = Object.keys(actionInput);
 
         const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
 

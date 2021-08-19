@@ -13,7 +13,7 @@ module.exports = (text, callbackId, item) => ({
                 type: 'plain_text_input',
                 action_id: `${item._id}`,
                 multiline: true,
-                text: `${item.value}`
+                initial_value: `${item.value}`
             },
             label: {
                 type: 'plain_text',
@@ -26,7 +26,7 @@ module.exports = (text, callbackId, item) => ({
             element: {
                 type: 'plain_text_input',
                 action_id: 'roxy_input',
-                text: `${item.rocks}`
+                initial_value: `${item.rocks}`
             },
             label: {
                 type: 'plain_text',

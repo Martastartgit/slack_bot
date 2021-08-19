@@ -9,6 +9,7 @@ const {
     createActionHelper,
     createRewardHelper,
     filteredStore,
+    editActionHelper,
     getUserBalanceHelper,
     getValueFromApprovedHrBlock,
     karmaListenerHelper,
@@ -358,7 +359,7 @@ module.exports = {
                 break;
 
             case constants.EDIT_ACTION:
-                await say('dffdg');
+                await editActionHelper(body.user.id, say);
 
                 break;
         }
