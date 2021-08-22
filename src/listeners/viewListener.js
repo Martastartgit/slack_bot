@@ -1,14 +1,14 @@
-const { getInputValue } = require('../helper');
+const {
+    getInputValue, actionViewHelper, rewardViewHelper, editActionViewHelper
+} = require('../helper');
 const {
     approvedAttachment,
     karmaHRBlock
 } = require('../layouts');
 const {
-    roxyValidation,
-    textInputValidation
+    roxyValidation
 } = require('../validators');
 const {
-    actionService, rewardService,
     userService,
     karmaService
 } = require('../service');
@@ -26,39 +26,7 @@ module.exports = {
 
         const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
 
-        const ifRoxyNotValid = roxyValidation(Number(rocksValue));
-        const ifTextValid = textInputValidation(textValue);
-
-        if (ifRoxyNotValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    roxy_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        if (!ifTextValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    action_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        await ack();
-
-        await actionService.createAction({ value: textValue, rocks: Number(rocksValue) });
-
-        await client.chat.postMessage({
-            channel: body.user.id,
-            text: 'Action was created'
-        });
+        await actionViewHelper(textValue, rocksValue, ack, client, body);
     },
 
     modalViewReward: async ({
@@ -68,41 +36,10 @@ module.exports = {
             rewardInput,
             roxyInput
         ] = Object.values(view.state.values);
+
         const { textValue, rocksValue } = getInputValue(rewardInput, roxyInput, constants.REWARD);
 
-        const ifTextValid = textInputValidation(textValue);
-        const ifRoxyNotValid = roxyValidation(Number(rocksValue));
-
-        if (ifRoxyNotValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    roxy_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        if (!ifTextValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    action_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        await ack();
-
-        await rewardService.createReward({ value: textValue, rocks: Number(rocksValue) });
-
-        await client.chat.postMessage({
-            channel: body.user.id,
-            text: 'Reward was created'
-        });
+        await rewardViewHelper(textValue, rocksValue, ack, client, body);
     },
 
     modalViewKarma: async ({
@@ -137,17 +74,6 @@ module.exports = {
                 response_action: 'errors',
                 errors: {
                     rocks_block: 'You don\'t have enough rocks!'
-                }
-            });
-
-            return;
-        }
-
-        if (rocksValue > 20) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    rocks_block: 'You can\'t send more than 20 rocks!'
                 }
             });
 
@@ -230,39 +156,7 @@ module.exports = {
 
         const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
 
-        const ifRoxyNotValid = roxyValidation(Number(rocksValue));
-        const ifTextValid = textInputValidation(textValue);
-
-        if (ifRoxyNotValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    roxy_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        if (!ifTextValid) {
-            await ack({
-                response_action: 'errors',
-                errors: {
-                    action_block: 'Not valid input'
-                }
-            });
-
-            return;
-        }
-
-        await ack();
-
-        await actionService.updateAction({ _id: actionId }, { $set: { rocks: rocksValue, value: textValue } });
-
-        await client.chat.postMessage({
-            channel: body.user.id,
-            text: `This action: ${textValue} was edited`
-        });
+        await editActionViewHelper(textValue, rocksValue, ack, client, body, actionId);
     }
 
 };

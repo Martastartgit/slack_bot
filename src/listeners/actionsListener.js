@@ -1,7 +1,7 @@
 const { constants } = require('../constants');
 const {
     CHANNEL_GENERAL_ID,
-    HR2
+    HR3
 } = require('../config/config');
 const {
     changeBalanceHelper,
@@ -41,7 +41,7 @@ module.exports = {
 
                 await say({
                     text: 'Hey pick reward',
-                    attachments: selectAttachments
+                    blocks: selectAttachments
                 });
                 break;
             }
@@ -50,7 +50,7 @@ module.exports = {
 
                 await say({
                     text: 'Hey pick action',
-                    attachments: selectAttachments
+                    blocks: selectAttachments
                 });
 
                 break;
@@ -95,7 +95,7 @@ module.exports = {
         const reward = await rewardService.findOneReward({ value: rewardName });
 
         await client.chat.postMessage({
-            channel: `${HR2}`,
+            channel: `${HR3}`,
             blocks: approvedHRreturn(body.user, reward, constants.REWARD),
             attachments: approvedAttachment(constants.APPROVED_HR_Return)
         });
@@ -119,7 +119,7 @@ module.exports = {
                 const chosenAction = await actionService.findAction({ value: actionName });
 
                 await client.chat.postMessage({
-                    channel: `${HR2}`,
+                    channel: `${HR3}`,
                     blocks: approvedHRBlock(body.user, chosenAction, constants.ACTION),
                     attachments: approvedAttachment(constants.APPROVED_HR_ACTION)
                 });
@@ -172,7 +172,7 @@ module.exports = {
                 });
 
                 await client.chat.postMessage({
-                    channel: `${HR2}`,
+                    channel: `${HR3}`,
                     text: `<@${body.user.id}> chose this reward: ${rewardName}\n User's balance: ${rocks} rocks`
 
                 });

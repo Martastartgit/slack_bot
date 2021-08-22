@@ -5,7 +5,7 @@ const { dataTableName: { ACTION } } = require('../../constants');
 const ActionScheme = new Schema({
     value: {
         type: String,
-        minlength: 5,
+        minlength: 4,
         maxlength: 100
     },
     rocks: {

@@ -1,4 +1,5 @@
 module.exports = {
+    actionViewHelper: require('./actionViewHelper'),
     changeBalanceHelper: require('./changeBalanceHelper'),
     checkAccess: require('./checkAccess'),
     checkUserInKarmaDB: require('./checkUserInKarmaDB'),
@@ -6,6 +7,7 @@ module.exports = {
     createActionHelper: require('./createActionHelper'),
     createRewardHelper: require('./createRewardHelper'),
     editActionHelper: require('./editActionHelper'),
+    editActionViewHelper: require('./editActionViewHelper'),
     getAllUsers: require('./getAllUsers'),
     getUserBalanceHelper: require('./getUserBalanceHelper'),
     getValueFromApprovedHrBlock: require('./getBlocksValue'),
@@ -13,8 +15,7 @@ module.exports = {
     filteredStore: require('./filteredArrayOfRewards'),
     karmaListenerHelper: require('./karmaListenerHelper'),
     karmaProgramHelper: require('./karmaProgramHelper'),
+    rewardViewHelper: require('./rewardViewHelper'),
     returnRewardHelper: require('./returnRewardHelper'),
-    setKarmaRocks: require('./setKarmaRocks'),
-    validationHelper: require('./validationHelper')
-
+    setKarmaRocks: require('./setKarmaRocks')
 };
