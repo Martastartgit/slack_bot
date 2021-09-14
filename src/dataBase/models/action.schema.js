@@ -6,7 +6,7 @@ const ActionScheme = new Schema({
     value: {
         type: String,
         minlength: 4,
-        maxlength: 100
+        maxlength: 64
     },
     rocks: {
         type: Number,

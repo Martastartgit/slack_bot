@@ -7,7 +7,7 @@ const RewardScheme = new Schema({
     value: {
         type: String,
         minlength: 5,
-        maxlength: 100
+        maxlength: 64
     },
     rocks: {
         type: Number,
