@@ -13,14 +13,14 @@ module.exports = (karmaUser, karmaRocks, user) => [
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `<@${karmaUser.id}> has received *${karmaRocks}* rocks.`
+            text: `<@${karmaUser.id}> has received *${karmaRocks}*:moneybag:.`
         }
     },
     {
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `From the user: <@${user}>\nCurrent balance: *${karmaUser.rocks}*`
+            text: `From the user: <@${user}>\nCurrent balance: *${karmaUser.rocks}*:moneybag: `,
         }
     }
 ];

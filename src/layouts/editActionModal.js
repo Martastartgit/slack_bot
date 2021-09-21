@@ -22,6 +22,18 @@ module.exports = (text, callbackId, item) => ({
         },
         {
             type: 'input',
+            block_id: 'shortText_block',
+            element: {
+                type: 'plain_text_input',
+                initial_value: `${item.shortDescription}`
+            },
+            label: {
+                type: 'plain_text',
+                text: 'Short description'
+            }
+        },
+        {
+            type: 'input',
             block_id: 'roxy_block',
             element: {
                 type: 'plain_text_input',

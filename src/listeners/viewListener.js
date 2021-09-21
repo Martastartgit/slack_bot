@@ -1,5 +1,5 @@
 const {
-    getInputValue, actionViewHelper, rewardViewHelper, editActionViewHelper
+    balanceValueInput, getInputValue, actionViewHelper, rewardViewHelper, editActionViewHelper, editRewardViewHelper
 } = require('../helper');
 const {
     approvedAttachment,
@@ -13,20 +13,22 @@ const {
     karmaService
 } = require('../service');
 const { constants } = require('../constants');
-const { HR2 } = require('../config/config');
+const { HR3 } = require('../config/config');
 
 module.exports = {
     modalViewAction: async ({
         ack, body, view, client
     }) => {
+
         const [
             actionInput,
+            shortTextInput,
             roxyInput
         ] = Object.values(view.state.values);
 
-        const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
+        const { textValue, rocksValue, shortValue } = getInputValue(actionInput, shortTextInput, roxyInput, constants.ACTION);
 
-        await actionViewHelper(textValue, rocksValue, ack, client, body);
+        await actionViewHelper(textValue, shortValue, rocksValue, ack, client, body);
     },
 
     modalViewReward: async ({
@@ -34,12 +36,13 @@ module.exports = {
     }) => {
         const [
             rewardInput,
+            shortTextInput,
             roxyInput
         ] = Object.values(view.state.values);
 
-        const { textValue, rocksValue } = getInputValue(rewardInput, roxyInput, constants.REWARD);
+        const { textValue, rocksValue, shortValue } = getInputValue(rewardInput, shortTextInput, roxyInput, constants.REWARD);
 
-        await rewardViewHelper(textValue, rocksValue, ack, client, body);
+        await rewardViewHelper(textValue, shortValue, rocksValue, ack, client, body);
     },
 
     modalViewKarma: async ({
@@ -50,7 +53,7 @@ module.exports = {
             roxyInput
         ] = Object.values(view.state.values);
 
-        const { textValue, rocksValue } = getInputValue(userInput, roxyInput, constants.KARMA);
+        const { user, rocksValue } = balanceValueInput(userInput, roxyInput);
 
         const ifRoxyNotValid = roxyValidation(Number(rocksValue));
 
@@ -80,7 +83,7 @@ module.exports = {
             return;
         }
 
-        if (textValue === body.user.id) {
+        if (user === body.user.id) {
             await ack({
                 response_action: 'errors',
                 errors: {
@@ -99,9 +102,9 @@ module.exports = {
         });
 
         await client.chat.postMessage({
-            channel: `${HR2}`,
-            text: `${body.user.id},${textValue},${rocksValue}`,
-            blocks: karmaHRBlock(body.user.id, rocksValue, textValue),
+            channel: `${HR3}`,
+            text: `${body.user.id},${user},${rocksValue}`,
+            blocks: karmaHRBlock(body.user.id, rocksValue, user),
             attachments: approvedAttachment(constants.KARMA)
         });
     },
@@ -114,7 +117,7 @@ module.exports = {
             roxyInput
         ] = Object.values(view.state.values);
 
-        const { textValue, rocksValue } = getInputValue(userInput, roxyInput, constants.KARMA);
+        const { user, rocksValue } = balanceValueInput(userInput, roxyInput);
 
         const ifRoxyNotValid = roxyValidation(Number(rocksValue));
 
@@ -131,15 +134,15 @@ module.exports = {
 
         await ack();
 
-        await userService.updateOne({ id: textValue }, { $set: { rocks: rocksValue } });
+        await userService.updateOne({ id: user }, { $set: { rocks: rocksValue } });
 
         await client.chat.postMessage({
             channel: body.user.id,
-            text: `You changed <@${textValue}> rocks to ${rocksValue}`
+            text: `You changed <@${user}> rocks to ${rocksValue}`
         });
 
         await client.chat.postMessage({
-            channel: `${textValue}`,
+            channel: `${user}`,
             text: `<@${body.user.id}> changed your balance\n current balance: ${rocksValue} rocks`,
         });
     },
@@ -149,14 +152,31 @@ module.exports = {
     }) => {
         const [
             actionInput,
+            shortInput,
             roxyInput
         ] = Object.values(view.state.values);
 
         const actionId = Object.keys(actionInput);
 
-        const { textValue, rocksValue } = getInputValue(actionInput, roxyInput, constants.ACTION);
+        const { textValue, rocksValue, shortValue } = getInputValue(actionInput, shortInput, roxyInput, constants.ACTION);
 
-        await editActionViewHelper(textValue, rocksValue, ack, client, body, actionId);
+        await editActionViewHelper(textValue, shortValue, rocksValue, ack, client, body, actionId);
+    },
+
+    editRewardView: async ({
+        ack, body, view, client
+    }) => {
+        const [
+            actionInput,
+            shortInput,
+            roxyInput
+        ] = Object.values(view.state.values);
+
+        const actionId = Object.keys(actionInput);
+
+        const { textValue, rocksValue, shortValue } = getInputValue(actionInput, shortInput, roxyInput, constants.ACTION);
+
+        await editRewardViewHelper(textValue, shortValue, rocksValue, ack, client, body, actionId);
     }
 
 };

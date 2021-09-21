@@ -18,7 +18,7 @@ module.exports = (id, rocks, karmaUser) => [
             },
             {
                 type: 'mrkdwn',
-                text: `*How much rocks:*\n${rocks}`
+                text: `*How many rocks:*\n${rocks}`
             }
         ]
     }

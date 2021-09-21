@@ -1,14 +1,14 @@
 const {
+    checkTextLength,
     roxyValidation,
-    textInputValidation,
-    checkTextLength
+    textInputValidation
 } = require('../validators');
 const {
-    actionService
+    rewardService
 } = require('../service');
 
-module.exports = async (item, shortText, rocks, ack, client, body) => {
-    const ifRoxyNotValid = roxyValidation(Number(rocks));
+module.exports = async (item, shortText, rocksValue, ack, client, body, id) => {
+    const ifRoxyNotValid = roxyValidation(Number(rocksValue));
     const ifTextValid = textInputValidation(item);
     const textLength = checkTextLength(shortText);
 
@@ -47,10 +47,10 @@ module.exports = async (item, shortText, rocks, ack, client, body) => {
 
     await ack();
 
-    await actionService.createAction({ value: item, shortDescription: shortText, rocks: Number(rocks) });
+    await rewardService.updateReward({ _id: id }, { $set: { rocks: rocksValue, value: item, shortDescription: shortText } });
 
     await client.chat.postMessage({
         channel: body.user.id,
-        text: 'Action was created'
+        text: `This reward: ${shortText} was edited`
     });
 };

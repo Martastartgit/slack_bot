@@ -4,6 +4,7 @@ module.exports = (id, chosenAction, rocks) => [
         text: {
             type: 'plain_text',
             text: 'Balance notification'
+           
         }
     },
     {
@@ -13,14 +14,16 @@ module.exports = (id, chosenAction, rocks) => [
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `<@${id}> has received *${chosenAction.rocks}* rocks.`
+            text: `<@${id}> has received *${chosenAction.rocks}*:moneybag: `,
+    
         }
     },
     {
         type: 'section',
         text: {
             type: 'mrkdwn',
-            text: `For this action: *${chosenAction.value}*\nCurrent balance: *${rocks}*`
+            text: `For this action:trophy: : *${chosenAction.value}*\nCurrent balance: *${rocks}*:moneybag: `,
+        
         }
     }
 ];

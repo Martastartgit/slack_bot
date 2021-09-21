@@ -45,7 +45,7 @@ module.exports = (rocks) => ({
             },
             label: {
                 type: 'plain_text',
-                text: `You have ${rocks} rocks for karma.How much rocks do you want to give?`,
+                text: `You have ${rocks} rocks for karma. How many rocks do you want to give?`,
                 emoji: true
             }
         }

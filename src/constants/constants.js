@@ -22,5 +22,6 @@ module.exports = {
     GET_REWARDS: 'get_rewards',
     BALANCE: 'balance',
     USER_BALANCE: 'user_balance',
-    EDIT_ACTION: 'edit_action'
+    EDIT_ACTION: 'edit_action',
+    EDIT_REWARD: 'edit_reward'
 };

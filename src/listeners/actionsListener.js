@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 const { constants } = require('../constants');
 const {
     CHANNEL_GENERAL_ID,
@@ -10,6 +11,7 @@ const {
     createRewardHelper,
     filteredStore,
     editActionHelper,
+    editRewardHelper,
     getUserBalanceHelper,
     getValueFromApprovedHrBlock,
     karmaListenerHelper,
@@ -57,28 +59,28 @@ module.exports = {
         }
     },
 
-    selectAction: async ({ action, ack, respond }) => {
+    selectAction: async ({ action, ack, say }) => {
         await ack();
 
         const selectValue = action.selected_option.value;
 
-        const { rocks } = await actionService.findAction({ value: selectValue });
+        const { value, rocks } = await actionService.findAction({ shortDescription: selectValue });
 
-        await respond({
-            text: `${selectValue}. You'll get ${rocks} rocks.`,
+        await say({
+            text: `${value}. You'll get ${rocks} rocks.`,
             attachments: approvedAttachment(constants.ACTION)
         });
     },
 
-    selectStore: async ({ action, ack, respond }) => {
+    selectStore: async ({ action, ack, say }) => {
         await ack();
 
         const selectValue = action.selected_option.value;
 
-        const { rocks } = await rewardService.findOneReward({ value: selectValue });
+        const { value, rocks } = await rewardService.findOneReward({ shortDescription: selectValue });
 
-        await respond({
-            text: `${selectValue}. It costs ${rocks} rocks.`,
+        await say({
+            text: `${value}. It costs ${rocks} rocks.`,
             attachments: approvedAttachment(constants.REWARD)
         });
     },
@@ -362,6 +364,11 @@ module.exports = {
                 await editActionHelper(body.user.id, say);
 
                 break;
+
+            case constants.EDIT_REWARD:
+                await editRewardHelper(body.user.id, say);
+
+                break;
         }
     },
 
@@ -437,11 +444,26 @@ module.exports = {
 
         const selectValue = action.selected_option.value;
 
-        const chosenAction = await actionService.findAction({ value: selectValue });
+        const chosenAction = await actionService.findAction({ shortDescription: selectValue });
 
         await client.views.open({
             trigger_id: body.trigger_id,
             view: editActionModal(constants.ACTION, constants.EDIT_ACTION, chosenAction)
+        });
+    },
+
+    editReward: async ({
+        ack, action, client, body, say
+    }) => {
+        await ack();
+
+        const selectValue = action.selected_option.value;
+
+        const chosenReward = await rewardService.findOneReward({ shortDescription: selectValue });
+
+        await client.views.open({
+            trigger_id: body.trigger_id,
+            view: editActionModal(constants.REWARD, constants.EDIT_REWARD, chosenReward)
         });
     },
 

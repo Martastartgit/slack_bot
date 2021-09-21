@@ -16,10 +16,10 @@ const createOptions = async (text) => {
     return options.map((item) => ({
         text: {
             type: 'plain_text',
-            text: `${item.value} - ${item.rocks} rocks`,
+            text: `${item.shortDescription} - ${item.rocks} rocks`,
             emoji: true
         },
-        value: `${item.value}`
+        value: `${item.shortDescription}`
     }));
 };
 

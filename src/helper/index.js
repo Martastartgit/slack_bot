@@ -1,5 +1,6 @@
 module.exports = {
     actionViewHelper: require('./actionViewHelper'),
+    balanceValueInput: require('./balanceValueInput'),
     changeBalanceHelper: require('./changeBalanceHelper'),
     checkAccess: require('./checkAccess'),
     checkUserInKarmaDB: require('./checkUserInKarmaDB'),
@@ -7,6 +8,8 @@ module.exports = {
     createActionHelper: require('./createActionHelper'),
     createRewardHelper: require('./createRewardHelper'),
     editActionHelper: require('./editActionHelper'),
+    editRewardHelper: require('./editRewardHelper'),
+    editRewardViewHelper: require('./editRewardViewHelper'),
     editActionViewHelper: require('./editActionViewHelper'),
     getAllUsers: require('./getAllUsers'),
     getUserBalanceHelper: require('./getUserBalanceHelper'),

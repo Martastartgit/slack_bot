@@ -7,10 +7,10 @@ const {
     rewardService
 } = require('../service');
 
-module.exports = async (item, rocks, ack, client, body) => {
+module.exports = async (item, shortText, rocks, ack, client, body) => {
     const ifRoxyNotValid = roxyValidation(Number(rocks));
     const ifTextValid = textInputValidation(item);
-    const textLength = checkTextLength(item);
+    const textLength = checkTextLength(shortText);
 
     if (ifRoxyNotValid) {
         await ack({
@@ -23,11 +23,11 @@ module.exports = async (item, rocks, ack, client, body) => {
         return;
     }
 
-    if (textLength > 63) {
+    if (textLength > 25) {
         await ack({
             response_action: 'errors',
             errors: {
-                action_block: 'Text too long'
+                shortAction_input: 'Text too long'
             }
         });
 
@@ -47,7 +47,7 @@ module.exports = async (item, rocks, ack, client, body) => {
 
     await ack();
 
-    await rewardService.createReward({ value: item, rocks: Number(rocks) });
+    await rewardService.createReward({ value: item, shortDescription: shortText, rocks: Number(rocks) });
 
     await client.chat.postMessage({
         channel: body.user.id,

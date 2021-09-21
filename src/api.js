@@ -38,6 +38,8 @@ app.view('changeBalance_modal', viewListener.changeBalanceModal);
 
 app.view('edit_action', viewListener.editActionView);
 
+app.view('edit_reward', viewListener.editRewardView);
+
 app.command('/add_action', commandsListener.addAction);
 
 app.command('/add_reward', commandsListener.addReward);
@@ -81,6 +83,8 @@ app.action('static_select-command', actionsListener.selectCommand);
 app.action('get_balance', actionsListener.getUserBalance);
 
 app.action('edit_action', actionsListener.editAction);
+
+app.action('edit_reward', actionsListener.editReward);
 
 module.exports.handler = async (event, context, callback) => {
     const handler = await app.start();

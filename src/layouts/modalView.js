@@ -25,13 +25,29 @@ module.exports = (text, callbackId) => ({
         },
         {
             type: 'input',
+            block_id: 'short_block',
+            element: {
+                type: 'plain_text_input',
+                action_id: 'shortAction_input',
+                placeholder: {
+                    type: 'plain_text',
+                    text: 'Short text (only 25 letters)'
+                }
+            },
+            label: {
+                type: 'plain_text',
+                text: 'Short description'
+            }
+        },
+        {
+            type: 'input',
             block_id: 'roxy_block',
             element: {
                 type: 'plain_text_input',
                 action_id: 'roxy_input',
                 placeholder: {
                     type: 'plain_text',
-                    text: 'How much rocks'
+                    text: 'How many rocks'
                 }
             },
             label: {

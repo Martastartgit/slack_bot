@@ -6,13 +6,17 @@ const RewardScheme = new Schema({
     id: String,
     value: {
         type: String,
-        minlength: 5,
-        maxlength: 64
+        minlength: 2
+    },
+    shortDescription: {
+        type: String,
+        minlength: 4,
+        maxlength: 26
     },
     rocks: {
         type: Number,
         min: 1,
-        max: 999
+        max: 9999
     }
 
 });
